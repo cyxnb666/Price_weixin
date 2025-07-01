@@ -966,10 +966,6 @@ Page({
       this.toast('请选择品种大类', 'warning')
       return
     }
-    if (!this.data.pricingDetail.categoryId) {
-      this.toast('请选择品种小类', 'warning')
-      return
-    }
     if (!this.data.pricingDetail.linkerName) {
       this.toast('请选择联系人', 'warning')
       return
