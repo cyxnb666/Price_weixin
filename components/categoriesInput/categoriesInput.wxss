@@ -1,0 +1,36 @@
+/* components/categoriesSelect/categoriesSelect.wxss */
+.category-table {
+  width: 100%;
+  border: 1px solid #eee;
+  border-radius: 8rpx;
+  overflow: hidden;
+  margin-top: 10rpx;
+}
+
+.category-header {
+  display: flex;
+  background-color: #f5f5f5;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+}
+
+.category-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.category-row:last-child {
+  border-bottom: none;
+}
+
+.category-column {
+  flex: 1;
+  padding: 20rpx;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex{
+  display: flex;
+}

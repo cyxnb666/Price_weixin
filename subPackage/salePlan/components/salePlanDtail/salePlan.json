@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "date-picker":"/components/date-picker/date-picker",
+    "categoriesInput":"/components/categoriesInput/categoriesInput"
+  }
+}

@@ -1,0 +1,119 @@
+<!--priceReportDetail.wxml-->
+<wxs module="filter" src="./priceReportDetail.wxs"></wxs>
+<navigation-bar title="价格报送详情" back="{{true}}" />
+<t-pull-down-refresh class="priceReportDetail" show-scrollbar="{{false}}" value="{{refresherTriggered}}" style="{{disabled ? 'height:100% !important' : 'height:calc(100% - 190px) !important'}}" loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']}}" usingCustomNavbar bind:refresh="bindRefresh">
+
+  <view class="priceReportDetail-container">
+    <!-- 商超 -->
+    <!-- TODO 根据农户和商超权限显示 -->
+    <view wx:if="{{userInfo.secondRoleCode == 'MARKET'}}">
+      <t-cell title="种植户姓名">
+        <t-input placeholder="请输入种植户姓名" slot='note' align="right" value='{{priceReportDetail.farmerName}}' bindchange="onTextInput" t-class-tips="tips" data-type='farmerName' />
+      </t-cell>
+      <t-cell title="种植户证件号码">
+        <t-input style="padding-left: 0;" placeholder="请输入种植户证件号码" type='idcard' slot='description' value='{{priceReportDetail.farmerCardNo}}' bindchange="onTextInput" t-class-tips="tips" data-type='farmerCardNo' />
+      </t-cell>
+      <t-cell title="种植户电话号码">
+        <t-input style="padding-left: 0;" placeholder="请输入种植户电话号码" slot='description' value='{{priceReportDetail.farmerMobile}}' bindchange="onTextInput" type="number" tips="{{phoneError ? '手机号输入不正确' : ''}}" t-class-tips="tips" data-type='farmerMobile' />
+      </t-cell>
+    </view>
+    <!-- 果园位置 -->
+    <t-cell title="果园位置" description="{{priceReportDetail.collectAddress || '点击获取'}}" right-icon="location" hover bind:click="getLocation" />
+    <!-- 所属区县 -->
+    <t-cell title="所属区县" note="{{ areaText}}" arrow hover data-key="areacode" bind:click="selectArea" />
+    <!-- 预计采摘时间 -->
+    <!-- <date-picker title="预计采摘时间" wx:if="{{!disabled}}" start="{{today}}" date="{{priceReportDetail.collectMonth}}" bind:datechange="onDateChange" /> -->
+    <t-cell title="预计采摘时间" note="{{ priceReportDetail.collectMonth}}" arrow hover data-key="collectMonth" bind:click="selectMonth" />
+    <!-- <t-cell title="预计采摘时间" wx:if="{{disabled}}" note="{{priceReportDetail.collectMonth}}" /> -->
+
+    <!-- 价格类型 TODO 默认订购价? -->
+    <t-cell title="价格类型" note="{{priceTypes[priceReportDetail.priceType] || '请选择'}}" arrow hover data-key="priceType"  />
+<!-- bind:click="selectPriceType" -->
+    <!-- 品种大类 -->
+    <t-cell title="品种大类">
+      <view slot="description">
+        <t-check-tag wx:for="{{varieties}}" wx:key="index" class="margin-16" bind:click="tagClick" data-varietyId="{{item.varietyId}}" data-key="varietyId" data-varietyName="{{item.varietyName}}" checked="{{priceReportDetail.varietyId === item.varietyId}}" size="large" variant="dark" content="{{ item.varietyName }}" />
+      </view>
+    </t-cell>
+
+    <!-- 品种小类 -->
+    <t-cell title="品种小类">
+      <view slot="description">
+        <t-check-tag wx:for="{{categories}}" wx:key="index" class="margin-16" bind:click="categoryTagClick" data-categoryId="{{item.categoryId}}" data-key="categoryId" data-categoryName="{{item.categoryName}}" checked="{{priceReportDetail.categoryId === item.categoryId}}" size="large" variant="dark" content="{{ item.categoryName }}" />
+      </view>
+    </t-cell>
+
+    <!-- 价格输入面板 -->
+    <view wx:if="{{priceReportDetail.varietyId }}">
+      <price-input-panel diameterData="{{diameterData}}" weightData="{{weightData}}" bulkData="{{bulkData}}" varietyId="{{priceReportDetail.varietyId}}" channel="{{channel}}" diameterSpecs="{{specssList.diameterSpecsVos}}" weightSpecs="{{specssList.weightSpecsVos}}" disabled="{{disabled}}" varietyUnit="{{varietyUnit}}" bind:update="handleUpdate" bind:selectItem="handleSelectItem" bind:toast="handleToast" bind:sectionToggle="handleSectionToggle" showDiameterSection="{{showDiameter}}" showWeightSection="{{showWeight}}" showBulkSection="{{showBulk}}" />
+    </view>
+    <!-- 农户证件影像部分 -->
+    <view class="evidence-section" wx:if="{{ (userInfo.secondRoleCode == 'MARKET')}}">
+      <t-cell title="农户证件影像">
+        <view slot="description">
+          <t-grid class="block" column="{{3}}" wx:if="{{!disabled}}">
+            <t-grid-item t-class-image="image" text="凭证拍照" icon="camera" data-type="camera" data-key="cardFileIds" bindtap="chooseMedia" />
+            <t-grid-item t-class-image="image" text="手机上传凭证" icon="folder-move" data-type="album" data-key="cardFileIds" bindtap="chooseMedia" />
+            <t-grid-item t-class-image="image" text="微信聊天文件" icon="cloud-upload" data-key="cardFileIds" bindtap="chooseMessageFile" />
+          </t-grid>
+        </view>
+      </t-cell>
+      <t-swipe-cell wx:for="{{cardFileIds}}" disabled="{{disabled}}"  wx:key="index">
+        <t-cell title="{{(index+1)+'. '+item}}" arrow hover data-key="cardFileIds" data-index="{{index}}" data-id="{{item}}" bindtap="preview" />
+        <view slot="right" class="btn delete-btn" data-key="cardFileIds" data-index="{{index}}" data-id="{{item}}" bind:tap="fileDelete">删除
+        </view>
+      </t-swipe-cell>
+    </view>
+    <!-- 订购合同部分 -->
+    <view class="evidence-section" >
+      <t-cell title="订购合同">
+        <view slot="description">
+          <t-grid class="block" column="{{3}}" wx:if="{{!disabled}}">
+            <t-grid-item t-class-image="image" text="凭证拍照" icon="camera" data-type="camera" data-key="agreementFileIds" bindtap="chooseMedia" />
+            <t-grid-item t-class-image="image" text="手机上传凭证" icon="folder-move" data-type="album" data-key="agreementFileIds" bindtap="chooseMedia" />
+            <t-grid-item t-class-image="image" text="微信聊天文件" icon="cloud-upload" data-key="agreementFileIds" bindtap="chooseMessageFile" />
+          </t-grid>
+        </view>
+      </t-cell>
+      <t-swipe-cell wx:for="{{agreementFileIds}}" disabled="{{disabled}}"  wx:key="index">
+        <t-cell title="{{(index+1)+'. '+item}}" arrow hover data-key="agreementFileIds" data-index="{{index}}" data-id="{{item}}" bindtap="preview" />
+        <view slot="right" class="btn delete-btn" data-key="agreementFileIds" data-index="{{index}}" data-id="{{item}}" bind:tap="fileDelete">删除
+        </view>
+      </t-swipe-cell>
+    </view>
+
+  </view>
+<t-picker
+  visible="{{areaVisible}}"
+  value="{{areaValue}}"
+  title="选择地区"
+  cancelBtn="取消"
+  confirmBtn="确认"
+  usingCustomNavbar
+  bindchange="onPickerChange"
+  bindpick="onColumnChange"
+  bindcancel="onPickerCancel"
+>
+  <t-picker-item options="{{farmerAreaList}}"></t-picker-item>
+  <t-picker-item options="{{cities}}"></t-picker-item>
+  <t-picker-item options="{{counties}}"></t-picker-item>
+</t-picker>
+
+  <t-date-time-picker title="选择日期" visible="{{monthVisible}}" mode="month" value="{{month}}" format="YYYY-MM" bindchange="onConfirm"  bindcancel="hidePicker" start="{{start}}" end="{{end}}" />
+  <!-- 选择器弹窗 -->
+  <t-picker visible="{{pickerVisible}}" value="{{pickerValue}}" title="{{pickerTitle}}" cancelBtn="取消" confirmBtn="确认" usingCustomNavbar bindconfirm="onPickerConfirm" bindcancel="onPickerCancel">
+    <t-picker-item options="{{pickerOptions}}" />
+  </t-picker>
+</t-pull-down-refresh>
+
+<!-- 底部操作按钮 -->
+<view class="operation" wx:if="{{!disabled}}">
+  <view class="operation-btn-box">
+    <t-button class="operation-btn" theme="primary" disabled="{{stagingLoading}}" loading="{{stagingLoading}}" bind:tap="staging">暂存数据</t-button>
+  </view>
+  <view class="operation-btn-box">
+    <t-button class="operation-btn" theme="primary" disabled="{{stagingLoading}}" loading="{{submitLoading}}" bind:tap="submit">提交数据</t-button>
+  </view>
+</view>
+
+<t-toast id="t-toast" />

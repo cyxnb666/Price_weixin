@@ -1,0 +1,39 @@
+<!--components/categoriesSelect/categoriesSelect.wxml-->
+<!-- 品种小类 -->
+<wxs module="filter" src="./categoriesInput.wxs" />
+<t-cell>
+  <view slot="title" class="title-with-icon flex">
+    <text>品种小类</text>
+    <t-icon name="add" size="48rpx" catchtap="addCategory" wx:if="{{!disabled}}" />
+  </view>
+  <view slot="description">
+    <view class="category-table" wx:if="{{categoryes.length}}">
+      <view class="category-header">
+        <view class="category-column">品种</view>
+        <view class="category-column">计划出货量(KG)</view>
+        <view class="category-column" wx:if="{{!disabled}}">操作</view>
+      </view>
+
+      <!-- 遍历显示品种小类 -->
+      <view class="category-row" wx:for="{{categoryes}}" wx:key="index">
+        <view class="category-column">
+          <text class="font14">{{filter.pickerFilter(item.categoryId, 'categoryId', 'categoryName', categoryList) || "请选择"}}</text>
+          <t-icon name="caret-down-small"  data-index="{{index}}" size="48rpx" bindtap="selectCategory"/>
+        </view>
+        <view class="category-column status-text status-{{item.collectStatus}}" data-id="{{item.categoryId}}" data-index="{{index}}" data-name="{{item.categoryName}}" data-collectcategoryid="{{item.collectCategoryId}}" bind:tap="handleCategoryClick" >
+          {{item.planSaleWeight || "请输入"}}
+        </view>
+
+        <view class="category-column" wx:if="{{!disabled}}">
+          <t-icon name="delete" color="#e34d59" size="48rpx" data-id="{{item.categoryId}}" data-index="{{index}}" data-collectcategoryid="{{item.collectCategoryId}}" catchtap="deleteCategory" />
+        </view>
+      </view>
+    </view>
+    <t-empty wx:else description="该品种大类下暂无小类" />
+  </view>
+</t-cell>
+<t-dialog visible="{{showCategoryDialog}}" title="计划出货量" confirm-btn="确定" cancel-btn="取消" bind:confirm="confirmAddCategory" bind:cancel="closeCategoryDialog">
+  <view class="dialog-content" slot="content">
+    <t-input suffix="KG" class="dialog-input" clearable slot="content" type="digit" placeholder="请输入计划出货量" placeholder-class="placeholder" maxlength="{{8}}" value="{{weight}}" bind:change="onInput" bind:clear="onInputClear" />
+  </view>
+</t-dialog>

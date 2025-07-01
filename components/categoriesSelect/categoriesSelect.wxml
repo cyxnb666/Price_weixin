@@ -1,0 +1,70 @@
+<!--components/categoriesSelect/categoriesSelect.wxml-->
+    <!-- 品种小类 -->
+    <t-cell>
+			<view slot="title" class="title-with-icon flex">
+				<text>品种小类</text>
+				<t-icon
+				 name="add"
+				 size="48rpx"
+				 catchtap="showAddCategoryDialog"
+				 wx:if="{{!disabled}}"
+				/>
+			</view>
+			<view slot="description">
+				<view class="category-table" wx:if="{{categories.length}}">
+					<view class="category-header">
+						<view class="category-column">品种</view>
+						<view class="category-column">录入状态</view>
+						<view class="category-column" wx:if="{{!disabled}}">操作</view>
+					</view>
+
+					<!-- 遍历显示品种小类 -->
+					<view class="category-row" wx:for="{{categories}}" wx:key="categoryId">
+						<view class="category-column">{{item.categoryName}}</view>
+						<view
+						 class="category-column status-text status-{{item.collectStatus}}"
+						 data-id="{{item.categoryId}}"
+						 data-name="{{item.categoryName}}"
+						 data-collectcategoryid="{{item.collectCategoryId}}"
+						 bindtap="handleCategoryClick"
+						>
+							{{item.collectStatus === '2' ? '待采价' : (item.collectStatus === '3' ? '暂存' : '已完成')}}
+						</view>
+						<view class="category-column" wx:if="{{!disabled}}">
+							<t-icon
+							 name="delete"
+							 color="#e34d59"
+							 size="48rpx"
+							 data-id="{{item.categoryId}}"
+							 data-collectcategoryid="{{item.collectCategoryId}}"
+							 catchtap="deleteCategory"
+							 
+							/>
+						</view>
+					</view>
+				</view>
+				<t-empty wx:else description="该品种大类下暂无小类" />
+			</view>
+		</t-cell>
+    <t-dialog
+		 visible="{{showCategoryDialog}}"
+		 title="添加品种小类"
+		 confirm-btn="确定"
+		 cancel-btn="取消"
+		 bind:confirm="confirmAddCategory"
+		 bind:cancel="closeCategoryDialog"
+		>
+			<view class="dialog-content" slot="content">
+				<view class="dialog-message">请选择要添加的品种小类</view>
+
+				<!-- 可选小类列表 -->
+				<t-checkbox-group value="{{selectedCategories}}" bind:change="onCheckboxChange">
+					<view class="category-option" wx:for="{{availableCategories}}" wx:key="categoryId">
+						<t-checkbox value="{{item.categoryId}}" label="{{item.categoryName}}" />
+					</view>
+				</t-checkbox-group>
+				<view class="no-category-tip" wx:if="{{availableCategories.length === 0}}">
+					暂无可添加的品种小类
+				</view>
+			</view>
+		</t-dialog>

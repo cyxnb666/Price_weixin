@@ -1,0 +1,2 @@
+<!--components/smallCatege/smallCatege.wxml-->
+<wxs module="filter" src="./smallCatege.wxs"></wxs>

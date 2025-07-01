@@ -1,0 +1,59 @@
+<!--orderRecord.wxml-->
+<navigation-bar title="行情记录" back="{{true}}" path="/pages/home/home"></navigation-bar>
+<t-pull-down-refresh class="orderRecord" show-scrollbar="{{false}}" value="{{refresherTriggered}}" loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']}}" usingCustomNavbar bind:refresh="onSearch" bind:scrolltolower="pageTurning">
+
+  <!-- <view class="queryBox">
+    <t-dropdown-menu>
+      <t-dropdown-item 
+        options="{{statusOptions}}" 
+        placement="right" 
+        value="{{queryForm.condition.status}}" 
+        bindchange="onChange" />
+      <t-input 
+        placeholder="输入商品名称查询" 
+        value="{{queryForm.condition.productName}}" 
+        bindblur="bindBlur" />
+    </t-dropdown-menu>
+  </view> -->
+
+  <view class="orderRecordList">
+    <block wx:for="{{orderRecordList}}" wx:key="index">
+      <t-swipe-cell opened="{{cellOpend}}" disabled="{{item.priceStatus == '4' || item.priceStatus == '5'}}">
+        <view class="orderRecordItem" data-item="{{item}}" bindtap="toDetail">
+          <view class="ListItem-body">
+            <view class="ListItem-body-item">
+              <view class="ListItem-body-item-title">行政区划:</view>
+              <view class="ListItem-body-item-content ">
+                <text style="    margin-right: 40rpx;">{{item.areaname || '暂无'}}</text>
+                <t-tag variant="dark" style="{{item.priceStatus == '3' ? 'background-color: #CCEDAA;color:#000;border:none' : ''}}" theme="{{orderStatusColor[item.priceStatus]}}">
+                  {{orderStatus[item.priceStatus]}}
+                </t-tag>
+              </view>
+            </view>
+            <view class="ListItem-body-item">
+              <view class="ListItem-body-item-title">采价品种:</view>
+              <view class="ListItem-body-item-content">{{item.varietyName}}</view>
+            </view>
+            <view class="ListItem-body-item">
+              <view class="ListItem-body-item-title">{{item.priceStatus == '3' ? '暂存时间' : '提交时间'}}:</view>
+              <view class="ListItem-body-item-content">{{item.collectTime}}</view>
+            </view>
+          </view>
+        </view>
+        <t-button theme="danger" class="dle-btn" data-item="{{item}}" size="large" slot="right" bindtap="onDelete">
+          {{  "删除" }}
+        </t-button>
+      </t-swipe-cell>
+    </block>
+  </view>
+  <view class="nothingMore">暂无更多</view>
+</t-pull-down-refresh>
+
+<t-dialog visible="{{showConfirm}}" title="{{orderItem.orderStatus == '1' ? '取消行情记录?' : '删除行情记录?'}}" content="{{orderItem.orderStatus == '1' ? '请确认是否取消行情记录?' : '请确认是否删除行情记录?'}}" confirm-btn="{{ confirmBtn }}" cancel-btn="取消" bind:confirm="closeDialog" bind:cancel="closeDialog" />
+<t-toast id="t-toast" />
+
+<view class="operation">
+  <view class="operation-btn-box">
+    <t-button class="operation-btn" theme="primary" bind:tap="submit">新增行情价格</t-button>
+  </view>
+</view>
