@@ -10,7 +10,7 @@
   </view>
   <image class="homeImage" src="/pages/images/home.png"></image>
   <view class="home-content">
-    <view class="home-item largeAmountSalePlan" wx:for="{{menuList[userInfo.roleCode]}}" wx:key="index"  catch:tap="jumpPage" data-url="{{item.path}}">
+    <view class="home-item largeAmountSalePlan" wx:for="{{menuList[currentMenuKey]}}" wx:key="index"  catch:tap="jumpPage" data-url="{{item.path}}">
       <view class="flex1" >
         <image class="home-item-image" src="{{item.icon}}"></image>
         <view class="home-item-title priceAcquisitionTask-title">{{item.menuName}}</view>
