@@ -187,18 +187,35 @@ Page({
       }
     }
     selectStallFruiveggies(params).then((res) => {
+      // 安全地获取当前选中品种的分类
+      let currentCategories = [];
+      if (this.data.pricingDetail.varietyId) {
+        const matchedVariety = res.find(v => v.varietyId === this.data.pricingDetail.varietyId);
+        currentCategories = matchedVariety ? matchedVariety.categories || [] : [];
+      }
+      
       this.setData({
         varieties: res,
-        categories: this.data.pricingDetail.varietyId ? res.filter(v => v.varietyId === this.data.pricingDetail.varietyId)[0].categories : []
+        categories: currentCategories
       })
+      
       if (flag) {
         if (res.length) {
+          // 默认选择第一个品种
+          const firstVariety = res[0];
+          const firstCategories = firstVariety.categories || [];
+          
           this.setData({
-            "pricingDetail.varietyId": res[0].varietyId,
+            "pricingDetail.varietyId": firstVariety.varietyId,
+            "pricingDetail.varietyName": firstVariety.varietyName,
             pickerKay:"varietyId",
-            categories: res[0].varietyId ? res.filter(v => v.varietyId === res[0].varietyId)[0].categories : []
+            categories: firstCategories
           })
-          res[0].varietyId && this.setPickerData(res[0].varietyId, true)
+          
+          // 如果有品种ID，获取规格数据
+          if (firstVariety.varietyId) {
+            this.setPickerData(firstVariety.varietyId, true)
+          }
         }
       }
     }).finally(() => {
@@ -211,14 +228,26 @@ Page({
     if (this.data.disabled) {
       return
     }
-    const key = e.target.dataset.key
+    const varietyId = e.currentTarget.dataset.varietyid;
+    const varietyName = e.currentTarget.dataset.varietyname;
+    const key = e.target.dataset.key;
+    
+    // 安全地获取对应品种的分类
+    const matchedVariety = this.data.varieties.find(v => v.varietyId === varietyId);
+    const categories = matchedVariety ? matchedVariety.categories || [] : [];
+    
     this.setData({
       pickerKay: key,
-      "pricingDetail.varietyId": e.currentTarget.dataset.varietyid,
-      "pricingDetail.varietyName": e.currentTarget.dataset.varietyname,
-      "categories": this.data.varieties.filter(v => v.varietyId === e.currentTarget.dataset.varietyid)[0].categories
+      "pricingDetail.varietyId": varietyId,
+      "pricingDetail.varietyName": varietyName,
+      "pricingDetail.categoryId": "", // 重置分类选择
+      "pricingDetail.categoryName": "", // 重置分类名称
+      "categories": categories
     })
-    this.setPickerData(e.currentTarget.dataset.varietyid, true)
+    
+    if (varietyId) {
+      this.setPickerData(varietyId, true)
+    }
   },
   tagcategoryClick(e) {
     if (this.data.disabled) {
@@ -288,16 +317,57 @@ Page({
     ownergetWxCollecpriceTask(params).then((res) => {
       console.log(res)
       console.log(this.data.varieties, 'this.data.varieties')
+      
+      // 查找对应的品种数据
+      const matchedVariety = this.data.varieties.find(v => v.varietyId == res.varietyId);
+      const categories = matchedVariety ? matchedVariety.categories : [];
+      
+      // 安全地设置规格类型
+      let pricingType = 'diameterSpecsVos';
+      if (res.specss && res.specss.length > 0) {
+        const specsType = res.specss[0].specsType;
+        if (specsType && obj[specsType]) {
+          pricingType = obj[specsType];
+        }
+      }
+      
+      // 安全地处理文件ID
+      const collectFileIds = res.collectFileIds ? res.collectFileIds.map(v => v.fileId) : [];
+      const priceFileIds = res.priceFileIds ? res.priceFileIds.map(v => v.fileId) : [];
+      
+      // 确保品种名称正确设置
+      let varietyName = res.varietyName;
+      if (!varietyName && matchedVariety) {
+        varietyName = matchedVariety.varietyName;
+      }
+      
+      // 确保分类名称正确设置
+      let categoryName = res.categoryName;
+      if (!categoryName && res.categoryId && categories.length > 0) {
+        const matchedCategory = categories.find(c => c.categoryId == res.categoryId);
+        if (matchedCategory) {
+          categoryName = matchedCategory.categoryName;
+        }
+      }
+      
       this.setData({
-        specss: res.specss,
-        pricingDetail: res,
+        specss: res.specss || [],
+        pricingDetail: {
+          ...res,
+          varietyName: varietyName,
+          categoryName: categoryName,
+          collectFileIds: collectFileIds,
+          priceFileIds: priceFileIds
+        },
         pickerKay: 'varietyId',
-        pricingType: res.specss.length ? obj[res.specss[0].specsType] : 'diameterSpecsVos',
-        "pricingDetail.collectFileIds": res.collectFileIds.map(v => v.fileId),
-        "pricingDetail.priceFileIds": res.priceFileIds.map(v => v.fileId),
-        "categories": this.data.varieties.filter(v => v.varietyId == res.varietyId)[0] ? this.data.varieties.filter(v => v.varietyId == res.varietyId)[0].categories : [],
+        pricingType: pricingType,
+        categories: categories,
       })
-      res.varietyId && this.setPickerData(res.varietyId, false)
+      
+      // 如果有品种ID，获取规格数据
+      if (res.varietyId) {
+        this.setPickerData(res.varietyId, false)
+      }
     }).finally(() => {
       this.setData({
         refresherTriggered: false
@@ -436,8 +506,23 @@ Page({
       })
     }
     if (['saleChannelCode', 'specsId'].includes(this.data.pickerKay)) {
+      // 确保specss数组存在且是数组
+      if (!this.data.pricingDetail.specss || !Array.isArray(this.data.pricingDetail.specss)) {
+        this.setData({
+          'pricingDetail.specss': []
+        });
+        return;
+      }
+      
+      // 确保specssIndex有效
+      if (this.data.specssIndex === null || this.data.specssIndex === undefined || 
+          this.data.specssIndex < 0 || this.data.specssIndex >= this.data.pricingDetail.specss.length) {
+        console.warn('Invalid specssIndex:', this.data.specssIndex);
+        return;
+      }
+      
       this.data.pricingDetail.specss.forEach((item, index) => {
-        if (index !== this.data.specssIndex) return;
+        if (index !== this.data.specssIndex || !item) return;
         item[this.data.pickerKay] = e.detail.value[0];
         if (this.data.pickerKay !== 'specsId') return;
         const label = e.detail.label[0];
@@ -447,7 +532,7 @@ Page({
           fvSpecsUnit
         } = this.parseSpecsLabel(label);
         let specssItem = this.data.specssList[this.data.pricingType]
-        const varietyUnit = specssItem.find(v=>v.specsId == e.detail.value[0]) ? specssItem.find(v=>v.specsId == e.detail.value[0]).varietyUnit : item.varietyUnit
+        const varietyUnit = specssItem && specssItem.find(v=>v.specsId == e.detail.value[0]) ? specssItem.find(v=>v.specsId == e.detail.value[0]).varietyUnit : item.varietyUnit
         Object.assign(item, {
           fvSpecsMin,
           fvSpecsMax,
@@ -891,9 +976,22 @@ Page({
     return 'other';
   },
   saveCollectPriceFn(submitType) {
-    this.data.pricingDetail.specss.forEach((item) => {
-      item.specsType = this.data.pricingType === 'diameterSpecsVos' ? 'DIAMETER' : 'WEIGHT'
-    })
+    // 确保specss是一个数组，如果不存在或不是数组则初始化为空数组
+    if (!this.data.pricingDetail.specss || !Array.isArray(this.data.pricingDetail.specss)) {
+      this.setData({
+        'pricingDetail.specss': []
+      });
+    }
+    
+    // 安全地遍历specss数组
+    if (this.data.pricingDetail.specss && this.data.pricingDetail.specss.length > 0) {
+      this.data.pricingDetail.specss.forEach((item) => {
+        if (item) {
+          item.specsType = this.data.pricingType === 'diameterSpecsVos' ? 'DIAMETER' : 'WEIGHT'
+        }
+      })
+    }
+    
     const params = {
       condition: {
         ...this.data.pricingDetail,
@@ -901,6 +999,7 @@ Page({
         collectPriceId: this.data.busiId || this.data.pricingDetail.collectPriceId,
       }
     }
+    
     ownersaveCollectPrice(params).then((res) => {
       this.toast('保存成功', 'success')
       wx.navigateBack()
