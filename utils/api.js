@@ -456,7 +456,7 @@ export const getOrderRecordorecord = (data) => instance.post('/orecord/getOrderR
 export const saveFruitMarket = (data) => instance.post('/market/saveFruitMarket', data)
 
 // 获取行政区划数据
-export const selectWholeAreaTrees = (data) => instance.post('/area/selectUserDataAreaTree', data)
+export const selectAreaTreeByParentCode = (data) => instance.post('/area/selectAreaTreeByParentCode', data)
 
 // 新增临时采价点接口（先模拟）
 export const addTempStall = (data) => instance.post('/temp/addTempStall', data)

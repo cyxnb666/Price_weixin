@@ -305,52 +305,6 @@ page {
   overflow-y: auto;
 }
 
-/* 品种选择弹窗样式 */
-.variety-select-container {
-  padding: 20rpx;
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-}
-
-.variety-select-title {
-  text-align: center;
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-bottom: 20rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 1px solid #eee;
-}
-
-.variety-select-scroll {
-  flex: 1;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.variety-option {
-  margin-bottom: 16rpx;
-  padding: 12rpx;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.variety-option:last-child {
-  border-bottom: none;
-}
-
-.variety-select-operation {
-  display: flex;
-  gap: 20rpx;
-  padding: 20rpx 0;
-  border-top: 1px solid #eee;
-  --td-button-primary-bg-color: #1989FA !important;
-  --td-button-primary-border-color: #1989FA !important;
-}
-
-.variety-select-operation t-button {
-  flex: 1;
-}
 
 /* 加载状态样式 */
 .variety-loading,
@@ -394,41 +348,15 @@ page {
   font-weight: bold;
 }
 
-/* 数据加载状态指示器 */
-.data-loading-indicator {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  padding: 20rpx 40rpx;
-  border-radius: 10rpx;
-  font-size: 28rpx;
-  z-index: 1000;
-}
 
 /* 响应式设计 */
 @media (max-height: 600px) {
-  .variety-select-container {
-    height: 90vh;
-  }
-  
   .dialog-content {
     max-height: 60vh;
   }
 }
 
-/* checkbox组件样式覆盖 */
-.variety-select-scroll .t-checkbox {
-  --td-checkbox-icon-checked-color: #1989FA !important;
-}
-
 /* 防止内容溢出 */
-.variety-select-scroll {
-  -webkit-overflow-scrolling: touch;
-}
-
 .temp-stall-form {
   -webkit-overflow-scrolling: touch;
 }
@@ -518,48 +446,6 @@ page {
   font-weight: bold;
 }
 
-/* 修复品种选择弹窗样式 */
-.variety-dialog-content {
-  padding: 0;
-  max-height: 60vh;
-  min-height: 40vh;
-}
-
-.variety-dialog-scroll {
-  max-height: 50vh;
-  overflow-y: auto;
-  padding: 20rpx;
-  -webkit-overflow-scrolling: touch;
-}
-
-.variety-dialog-option {
-  padding: 24rpx 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.variety-dialog-option:last-child {
-  border-bottom: none;
-}
-
-.variety-checkbox {
-  --td-checkbox-icon-checked-color: #1989FA !important;
-  width: 100%;
-}
-
-.variety-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 80rpx 0;
-  color: #999;
-}
-
-.no-variety-tip {
-  text-align: center;
-  color: #999;
-  padding: 80rpx 0;
-  font-size: 28rpx;
-}
 
 /* 新增临时采价点表单样式 */
 .dialog-content {
@@ -653,20 +539,6 @@ page {
   border-radius: 3rpx;
 }
 
-/* 响应式设计 */
-@media (max-height: 600px) {
-  .variety-dialog-content {
-    max-height: 90vh;
-  }
-  
-  .variety-dialog-scroll {
-    max-height: 40vh;
-  }
-  
-  .dialog-content {
-    max-height: 60vh;
-  }
-}
 
 /* 修复可能的布局问题 */
 .t-popup__content {

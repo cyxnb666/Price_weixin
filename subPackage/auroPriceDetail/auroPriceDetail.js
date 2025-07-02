@@ -15,7 +15,7 @@ import {
   ownerSelectCategories,
   ownerRemoveCollectCategory,
   ownerAddCollectCategory,
-  selectWholeAreaTrees,
+  selectAreaTreeByParentCode,
   addTempStall,
 } from "../../utils/api";
 import {
@@ -125,15 +125,10 @@ Page({
   provinces: [], // 省份列表
   cities: [], // 当前省份下的城市列表  
   counties: [], // 当前城市下的区县列表
-  rawAreaData: [], // 原始的区域树形数据
-  areaOptions: [],
   selectedProvince: null,
   selectedCity: null, 
   selectedCounty: null,
   
-  stallTypeLoading: false,
-  varietyLoading: false,
-  areaLoading: false
   },
   onLoad(options) {
     if (options.collectPriceId) {
@@ -377,24 +372,6 @@ selectButtomVarietiesFnAsync(stallId) {
         // 如果有品种小类组件，触发获取小类数据
         this.fetchCategories()
       }
-      if (res.length > 0) {
-  const firstVariety = res[0]
-  this.setData({
-    'pricingDetail.varietyId': firstVariety.varietyId,
-    'pricingDetail.varietyName': firstVariety.varietyName,
-    categories: firstVariety.categories || []
-  })
-  
-  // 如果有 setPickerData 方法，也调用一下
-  if (firstVariety.varietyId) {
-    this.setPickerData(firstVariety.varietyId, true)
-  }
-  
-  // 延迟调用 fetchCategories 确保组件已经渲染
-  setTimeout(() => {
-    this.fetchCategories()
-  }, 100)
-}
       
       resolve(res)
     }).catch(err => {
@@ -420,9 +397,6 @@ showAddTempStallDialog() {
       linkerName: '',
       linkerMobile: ''
     },
-    stallTypeLoading: true,
-    varietyLoading: true,
-    areaLoading: true
   })
   this.resetAreaPicker()
   // 并行加载所有必需的数据
@@ -432,18 +406,8 @@ showAddTempStallDialog() {
     this.getAreaOptions()
   ]).then(() => {
     console.log('所有数据加载完成')
-    this.setData({
-      stallTypeLoading: false,
-      varietyLoading: false,
-      areaLoading: false
-    })
   }).catch(err => {
     console.error('数据加载失败:', err)
-    this.setData({
-      stallTypeLoading: false,
-      varietyLoading: false,
-      areaLoading: false
-    })
     this.toast('数据加载失败，请重试', 'error')
   })
 },
@@ -497,123 +461,41 @@ getVarietyOptions() {
 },
 getAreaOptions() {
   return new Promise((resolve, reject) => {
-    selectWholeAreaTrees({}).then((res) => {
-      console.log('原始区域数据:', res)
+    // 获取省级数据（第一级）
+    const params = {
+      condition: {
+        primaryKey: ""  // 空字符串表示获取第一级（省级）数据
+      }
+    }
+    
+    selectAreaTreeByParentCode(params).then((res) => {
+      console.log('省级区域数据:', res)
       
-      // 保存原始数据
+      // 处理省级数据，第一个选项为"请选择"
+      const provinces = [
+        { label: '请选择省份', value: '' },
+        ...(Array.isArray(res) ? res.map(item => ({
+          label: item.areaname,
+          value: item.areacode
+        })) : [])
+      ]
+      
       this.setData({
-        rawAreaData: res
+        provinces: provinces,
+        cities: [{ label: '请选择城市', value: '' }],      // 默认显示请选择
+        counties: [{ label: '请选择区县', value: '' }],    // 默认显示请选择
+
       })
       
-      // 处理区域数据为三级联动格式
-      this.processAreaData(res)
       resolve(res)
     }).catch(err => {
-      console.error('获取行政区划失败:', err)
-      this.toast('获取行政区划失败', 'error')
+      console.error('获取省级区域数据失败:', err)
+      this.toast('获取省级区域数据失败', 'error')
       reject(err)
     })
   })
 },
 
-// 处理区域数据为三级联动格式
-processAreaData(rawData) {
-  if (!Array.isArray(rawData) || rawData.length === 0) {
-    console.error('区域数据格式错误')
-    return
-  }
-  
-  // 提取省份数据（areaLevel: "1"）
-  const provinces = rawData
-    .filter(item => item.areaLevel === "1")
-    .map(item => ({
-      label: item.areaname,
-      value: item.areacode,
-      children: item.children || []
-    }))
-    .sort((a, b) => a.sort - b.sort)
-  
-  // 初始化城市和区县数据（默认选择第一个省份）
-  let cities = []
-  let counties = []
-  
-  if (provinces.length > 0) {
-    const firstProvince = provinces[0]
-    cities = this.getCitiesByProvince(firstProvince.children)
-    
-    if (cities.length > 0) {
-      counties = this.getCountiesByCity(cities[0].children)
-    }
-  }
-  
-  this.setData({
-    provinces: provinces,
-    cities: cities,
-    counties: counties
-  })
-  
-  console.log('处理后的区域数据:', { provinces, cities, counties })
-},
-
-// 根据省份获取城市列表
-getCitiesByProvince(provinceChildren) {
-  if (!Array.isArray(provinceChildren)) return []
-  
-  return provinceChildren
-    .filter(item => item.areaLevel === "2")
-    .map(item => ({
-      label: item.areaname,
-      value: item.areacode,
-      children: item.children || []
-    }))
-    .sort((a, b) => (a.sort || 0) - (b.sort || 0))
-},
-
-// 根据城市获取区县列表
-getCountiesByCity(cityChildren) {
-  if (!Array.isArray(cityChildren)) return []
-  
-  return cityChildren
-    .filter(item => item.areaLevel === "3")
-    .map(item => ({
-      label: item.areaname,
-      value: item.areacode
-    }))
-    .sort((a, b) => (a.sort || 0) - (b.sort || 0))
-},
-// 格式化区划数据（根据实际返回的数据结构调整）
-formatAreaOptions(areaData) {
-  const options = []
-  
-  const flatten = (items, level = 0, prefix = '') => {
-    if (!Array.isArray(items)) return
-    
-    items.forEach(item => {
-      if (!item.areaCode || !item.areaName) return
-      
-      const label = level === 0 ? item.areaName : `${prefix} - ${item.areaName}`
-      options.push({
-        label: label,
-        value: item.areaCode,
-        level: level
-      })
-      
-      if (item.children && item.children.length > 0) {
-        flatten(item.children, level + 1, label)
-      }
-    })
-  }
-  
-  if (Array.isArray(areaData)) {
-    flatten(areaData)
-  } else if (areaData && typeof areaData === 'object') {
-    // 如果返回的是对象而不是数组，尝试提取数组
-    const dataArray = areaData.data || areaData.list || areaData.result || []
-    flatten(dataArray)
-  }
-  
-  return options
-},
 
 // 选择采价类型
 selectStallType() {
@@ -701,13 +583,6 @@ confirmVarietySelect() {
   console.log('选择的品种大类:', selectedNames)
 },
 
-debugDataStatus() {
-  console.log('当前数据状态:')
-  console.log('stallTypeOptions:', this.data.stallTypeOptions)
-  console.log('varietyOptions:', this.data.varietyOptions) 
-  console.log('areaOptions:', this.data.areaOptions)
-  console.log('tempStallForm:', this.data.tempStallForm)
-},
 
 cancelVarietySelect() {
   this.setData({
@@ -717,14 +592,9 @@ cancelVarietySelect() {
 
 // 选择行政区划
 selectArea() {
-  // 检查数据是否已加载
+  // 如果数据还没加载完，提示用户稍等
   if (this.data.provinces.length === 0) {
     this.toast('区域数据加载中，请稍候', 'loading')
-    this.getAreaOptions().then(() => {
-      this.setData({
-        areaPickerVisible: true
-      })
-    })
     return
   }
   
@@ -735,46 +605,111 @@ selectArea() {
 onAreaColumnChange(e) {
   console.log('区域选择器列变化:', e.detail)
   const { column, index } = e.detail
-  const currentValue = [...this.data.areaPickerValue]
   
   if (column === 0) {
-    // 省份改变
-    currentValue[0] = index
-    currentValue[1] = 0 // 重置城市选择
-    currentValue[2] = 0 // 重置区县选择
-    
+    // 省份改变，获取城市数据
     const selectedProvince = this.data.provinces[index]
-    const cities = this.getCitiesByProvince(selectedProvince.children)
-    const counties = cities.length > 0 ? this.getCountiesByCity(cities[0].children) : []
+    console.log('选择省份:', selectedProvince)
     
+    // 先记录选择状态
     this.setData({
-      areaPickerValue: currentValue,
-      cities: cities,
-      counties: counties,
-      selectedProvince: selectedProvince
+      selectedProvince: selectedProvince,
+      selectedCity: null,
+      selectedCounty: null
     })
+    
+    // 如果选择的不是"请选择"，则获取城市数据
+    if (selectedProvince && selectedProvince.value !== '') {
+      const params = {
+        condition: {
+          primaryKey: selectedProvince.value
+        }
+      }
+      
+      selectAreaTreeByParentCode(params).then((res) => {
+        const cities = [
+          { label: '请选择城市', value: '' },
+          ...(Array.isArray(res) ? res.map(item => ({
+            label: item.areaname,
+            value: item.areacode
+          })) : [])
+        ]
+        
+        const counties = [{ label: '请选择区县', value: '' }]
+        
+        // 先更新数据，不更新areaPickerValue
+        this.setData({
+          cities: cities,
+          counties: counties
+        })
+        
+      }).catch(err => {
+        console.error('获取城市数据失败:', err)
+        this.toast('获取城市数据失败', 'error')
+      })
+    } else {
+      // 选择了"请选择"，清空下级数据
+      this.setData({
+        cities: [{ label: '请选择城市', value: '' }],
+        counties: [{ label: '请选择区县', value: '' }]
+      })
+      
+    }
     
   } else if (column === 1) {
-    // 城市改变
-    currentValue[1] = index
-    currentValue[2] = 0 // 重置区县选择
-    
+    // 城市改变，获取区县数据
     const selectedCity = this.data.cities[index]
-    const counties = this.getCountiesByCity(selectedCity.children)
+    console.log('选择城市:', selectedCity)
     
+    // 先记录选择状态
     this.setData({
-      areaPickerValue: currentValue,
-      counties: counties,
-      selectedCity: selectedCity
+      selectedCity: selectedCity,
+      selectedCounty: null
     })
+    
+    // 如果选择的不是"请选择"，则获取区县数据
+    if (selectedCity && selectedCity.value !== '') {
+      const params = {
+        condition: {
+          primaryKey: selectedCity.value
+        }
+      }
+      
+      selectAreaTreeByParentCode(params).then((res) => {
+        const counties = [
+          { label: '请选择区县', value: '' },
+          ...(Array.isArray(res) ? res.map(item => ({
+            label: item.areaname,
+            value: item.areacode
+          })) : [])
+        ]
+        
+        // 先更新数据
+        this.setData({
+          counties: counties
+        })
+        
+      }).catch(err => {
+        console.error('获取区县数据失败:', err)
+        this.toast('获取区县数据失败', 'error')
+      })
+    } else {
+      // 选择了"请选择"，清空区县数据
+      this.setData({
+        counties: [{ label: '请选择区县', value: '' }]
+      })
+      
+    }
     
   } else if (column === 2) {
     // 区县改变
-    currentValue[2] = index
+    const selectedCounty = this.data.counties[index]
+    console.log('选择区县:', selectedCounty)
+    
     this.setData({
-      areaPickerValue: currentValue,
-      selectedCounty: this.data.counties[index]
+      selectedCounty: selectedCounty
     })
+    
   }
 },
 
@@ -782,26 +717,28 @@ onAreaPickerConfirm(e) {
   console.log('区域选择确认:', e.detail)
   const { value, label } = e.detail
   
-  // 确保选择了完整的省市区
-  if (!value[0] && value[0] !== 0) {
+  // 使用当前选择的数据来验证
+  const selectedProvince = this.data.selectedProvince
+  const selectedCity = this.data.selectedCity
+  const selectedCounty = this.data.selectedCounty
+  
+  console.log('当前选择状态:', { selectedProvince, selectedCity, selectedCounty })
+  
+  // 检查是否选择了有效的省份（不是"请选择"）
+  if (!selectedProvince || selectedProvince.value === '') {
     this.toast('请选择省份', 'warning')
     return
   }
-  if (!value[1] && value[1] !== 0) {
+  
+  // 检查是否选择了有效的城市（不是"请选择"）
+  if (!selectedCity || selectedCity.value === '') {
     this.toast('请选择城市', 'warning')
     return
   }
-  if (!value[2] && value[2] !== 0) {
+  
+  // 检查是否选择了有效的区县（不是"请选择"）
+  if (!selectedCounty || selectedCounty.value === '') {
     this.toast('请选择区县', 'warning')
-    return
-  }
-  
-  const selectedProvince = this.data.provinces[value[0]]
-  const selectedCity = this.data.cities[value[1]]
-  const selectedCounty = this.data.counties[value[2]]
-  
-  if (!selectedProvince || !selectedCity || !selectedCounty) {
-    this.toast('选择的区域无效，请重新选择', 'warning')
     return
   }
   
@@ -834,21 +771,10 @@ resetAreaPicker() {
     areaPickerValue: [0, 0, 0],
     selectedProvince: null,
     selectedCity: null,
-    selectedCounty: null
+    selectedCounty: null,
+    cities: [{ label: '请选择城市', value: '' }],
+    counties: [{ label: '请选择区县', value: '' }]
   })
-  
-  // 重新初始化城市和区县数据
-  if (this.data.provinces.length > 0) {
-    const firstProvince = this.data.provinces[0]
-    const cities = this.getCitiesByProvince(firstProvince.children)
-    const counties = cities.length > 0 ? this.getCountiesByCity(cities[0].children) : []
-    
-    this.setData({
-      cities: cities,
-      counties: counties,
-      selectedProvince: firstProvince
-    })
-  }
 },
 
 // 确认新增临时采价点
@@ -951,7 +877,7 @@ onTempStallTypeChange(e) {
 
 onTempStallAddressChange(e) {
   this.setData({
-    'tempStallForm.address': e.detail.value
+    'tempStallForm.stallAddress': e.detail.value
   })
 },
 
@@ -967,34 +893,6 @@ onTempStallMobileChange(e) {
   })
 },
 
-// 确认新增临时采价点
-confirmAddTempStall() {
-  const form = this.data.tempStallForm
-  
-  // 验证必填字段
-  if (!form.stallName.trim()) {
-    this.toast('请输入采价点名称', 'warning')
-    return
-  }
-  
-  if (!form.address.trim()) {
-    this.toast('请输入详细地址', 'warning')
-    return
-  }
-  
-  // 这里应该调用API创建临时采价点
-  // 暂时模拟成功创建
-  this.toast('临时采价点创建成功', 'success')
-  
-  // 关闭对话框
-  this.setData({
-    showTempStallDialog: false
-  })
-  
-  // TODO: 这里需要调用实际的API来创建临时采价点
-  // 创建成功后需要刷新采价点列表
-  // this.refreshStallList()
-},
   setTodayDate() {
     const today = new Date();
     const year = today.getFullYear();
