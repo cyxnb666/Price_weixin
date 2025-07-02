@@ -339,14 +339,6 @@ page {
   border-bottom: none;
 }
 
-/* 必填项标识 */
-.temp-stall-form .t-cell[required]::before,
-.temp-stall-form .t-input[required]::before {
-  content: '*';
-  color: #e34d59;
-  margin-right: 4rpx;
-  font-weight: bold;
-}
 
 
 /* 响应式设计 */
@@ -475,14 +467,6 @@ page {
   border-bottom: none;
 }
 
-/* 必填项标识 */
-.temp-stall-form .t-cell[required]::before,
-.temp-stall-form .t-input[required]::before {
-  content: '*';
-  color: #e34d59;
-  margin-right: 4rpx;
-  font-weight: bold;
-}
 
 /* 选择器加载状态 */
 .picker-loading {
@@ -557,4 +541,22 @@ page {
   --border-color-light: #f0f0f0;
   --bg-color: #fff;
   --bg-color-light: #f5f5f5;
+}
+
+/* 必填项样式 */
+.required-label {
+  display: inline-flex;
+  align-items: center;
+  color: #333;
+  font-size: 30rpx;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.required-star {
+  color: #e34d59;
+  margin-right: 4rpx;
+  font-weight: bold;
+  font-size: 30rpx;
 }

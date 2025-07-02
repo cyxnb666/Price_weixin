@@ -126,8 +126,8 @@
 				</view>
 			</view>
 		</t-dialog>
-		<!-- <t-cell title="协助采价员联系人" note="{{pricingDetail.linkerName || '请选择'}}" arrow hover data-key="linkerName" bind:click="getLinkerName" />
-    <t-cell title="协助采价员联系人电话" note="{{pricingDetail.linkerMobile}}" /> -->
+		<t-cell title="协助采价员联系人" note="{{pricingDetail.linkerName || '请选择'}}" arrow hover data-key="linkerName" bind:click="getLinkerName" />
+    <t-cell title="协助采价员联系人电话" note="{{pricingDetail.linkerMobile}}" />
 		<!-- <view class="pricingType">
       <view class="{{[pricingType === 'diameterSpecsVos' ? 'active-fruitDiameter' : 'fruitDiameter']}}" data-type="diameterSpecsVos" bindtap="pricingTypeFn">按果径
       </view>
@@ -310,51 +310,67 @@
     <view class="temp-stall-form">
       <!-- 采价点名称 - 必填 -->
       <t-input 
-        label="采价点名称" 
         placeholder="请输入采价点名称" 
         value="{{tempStallForm.stallName}}"
         bind:change="onTempStallNameChange"
-        required
-      />
+      >
+        <view slot="label" class="required-label">
+          <text class="required-star">*</text>
+          采价点名称
+        </view>
+      </t-input>
       
       <!-- 采价类型 - 必选 -->
       <t-cell 
-        title="采价类型" 
         note="{{tempStallForm.stallTypeName || '请选择采价类型'}}" 
         arrow 
         hover 
         bind:click="selectStallType"
-        required
-      />
+      >
+        <view slot="title" class="required-label">
+          <text class="required-star">*</text>
+          采价类型
+        </view>
+      </t-cell>
       
       <!-- 品种大类 - 多选 -->
       <t-cell 
-        title="品种大类" 
         note="{{tempStallForm.varietyNames || '请选择品种大类'}}" 
         arrow 
         hover 
         bind:click="selectVarieties"
-      />
+      >
+        <view slot="title" class="required-label">
+          <text class="required-star">*</text>
+          品种大类
+        </view>
+      </t-cell>
       
       <!-- 行政区划 - 必填单选 -->
       <t-cell 
-        title="行政区划" 
         note="{{tempStallForm.areaName || '请选择行政区划'}}" 
         arrow 
         hover 
         bind:click="selectArea"
-        required
-      />
+      >
+        <view slot="title" class="required-label">
+          <text class="required-star">*</text>
+          行政区划
+        </view>
+      </t-cell>
       
       <!-- 详细地址 - 必填 -->
       <t-input 
-        label="详细地址" 
         placeholder="请输入详细地址" 
         value="{{tempStallForm.stallAddress}}"
         bind:change="onTempStallAddressChange"
         type="textarea"
-        required
-      />
+      >
+        <view slot="label" class="required-label">
+          <text class="required-star">*</text>
+          详细地址
+        </view>
+      </t-input>
       
       <!-- 联系人 - 非必填 -->
       <t-input 

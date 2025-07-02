@@ -16,7 +16,7 @@ import {
   ownerRemoveCollectCategory,
   ownerAddCollectCategory,
   selectAreaTreeByParentCode,
-  addTempStall,
+  saveTempCollectStall,
 } from "../../utils/api";
 import {
   Toast
@@ -792,6 +792,11 @@ confirmAddTempStall() {
     return
   }
   
+  if (!form.varietyIds || form.varietyIds.length === 0) {
+    this.toast('请选择品种大类', 'warning')
+    return
+  }
+  
   if (!form.areaCode) {
     this.toast('请选择行政区划', 'warning')
     return
@@ -802,23 +807,38 @@ confirmAddTempStall() {
     return
   }
   
-  // 准备提交数据
-  const submitData = {
-    stallName: form.stallName.trim(),
-    stallType: form.stallType,
-    varietyIds: form.varietyIds,
-    stallAddress: form.stallAddress.trim(),
-    areaCode: form.areaCode
+  // 获取行政区划的省市区编码
+  const selectedProvince = this.data.selectedProvince
+  const selectedCity = this.data.selectedCity
+  const selectedCounty = this.data.selectedCounty
+  
+  if (!selectedProvince || !selectedCity || !selectedCounty) {
+    this.toast('行政区划信息不完整，请重新选择', 'warning')
+    return
   }
   
-  // 如果有联系人信息，添加到提交数据中
+  // 准备联系人信息
+  const linkers = []
   if (form.linkerName.trim() || form.linkerMobile.trim()) {
-    submitData.linkers = [{
+    linkers.push({
       linkerName: form.linkerName.trim(),
       linkerMobile: form.linkerMobile.trim()
-    }]
-  } else {
-    submitData.linkers = []
+    })
+  }
+  
+  // 准备提交数据，按照新的API格式
+  const submitData = {
+    condition: {
+      cityCode: selectedCity.value,               // 行政区划-市编码
+      linkers: linkers,                           // 联系人数组
+      provinceCode: selectedProvince.value,       // 行政区划-省编码
+      stallAddress: form.stallAddress.trim(),     // 详细地址
+      stallName: form.stallName.trim(),           // 采价点名字
+      stallState: "0",                            // 采价点状态：固定传"0"表示临时采价点
+      stallType: form.stallType,                  // 采价点类型
+      townCode: selectedCounty.value,             // 行政区划-区县编码
+      varietyIds: form.varietyIds                 // 采集品种ID数组
+    }
   }
   
   console.log('提交临时采价点数据:', submitData)
@@ -826,7 +846,7 @@ confirmAddTempStall() {
   this.toast('正在创建临时采价点...', 'loading')
   
   // 调用API创建临时采价点
-  addTempStall(submitData).then((res) => {
+  saveTempCollectStall(submitData).then((res) => {
     this.toast('临时采价点创建成功', 'success')
     
     // 关闭对话框

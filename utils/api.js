@@ -458,5 +458,5 @@ export const saveFruitMarket = (data) => instance.post('/market/saveFruitMarket'
 // 获取行政区划数据
 export const selectAreaTreeByParentCode = (data) => instance.post('/area/selectAreaTreeByParentCode', data)
 
-// 新增临时采价点接口（先模拟）
-export const addTempStall = (data) => instance.post('/temp/addTempStall', data)
+// 新增临时采价点接口
+export const saveTempCollectStall = (data) => instance.post('/stall/saveTempCollectStall', data)
