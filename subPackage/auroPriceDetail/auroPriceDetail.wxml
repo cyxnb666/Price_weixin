@@ -246,6 +246,187 @@
 		</t-button>
 	</view>
 </view>
+<!-- 采价点选择弹窗 -->
+<t-popup
+  visible="{{stallSelectVisible}}"
+  using-custom-navbar
+  close-on-overlay-click="{{true}}"
+  bind:visible-change="onStallSelectVisibleChange"
+  placement="right"
+>
+  <view class="popup-container" slot="content" wx:if="{{stallSelectVisible}}">
+    <view class="popup-container-title">采价点选择</view>
+    <t-search 
+      class="popup-container-search" 
+      value="{{stallSearchValue}}" 
+      bind:clear="onStallSearchClear"  
+      bind:change="onStallSearchChange" 
+      bind:blur="onStallSearch" 
+      placeholder="输入采价点查询" 
+    />
+    <scroll-view class="popup-container-scroll" scroll-y="true">
+      <t-radio-group value="{{selectedStallId}}" bind:change="onStallRadioChange">
+        <t-radio 
+          wx:for="{{filteredStallList}}" 
+          wx:key="stallId"
+          value="{{item.stallId}}" 
+          label="{{item.stallName}}"
+          class="stall-radio-item"
+        />
+      </t-radio-group>
+    </scroll-view>
+    <view class="popup-operation">
+      <t-button 
+        class="popup-operation-btn temp-btn" 
+        theme="primary" 
+        variant="outline"
+        bind:tap="showAddTempStallDialog"
+      >
+        新增临时采价点
+      </t-button>
+      <t-button 
+        class="popup-operation-btn confirm-btn" 
+        theme="primary" 
+        loading="{{confirmStallLoading}}" 
+        disabled="{{!selectedStallId}}"
+        bind:tap="confirmStallSelection"
+      >
+        确认选择
+      </t-button>
+    </view>
+  </view>
+</t-popup>
+
+<!-- 新增临时采价点弹窗 -->
+<t-dialog
+  visible="{{showTempStallDialog}}"
+  title="新增临时采价点"
+  confirm-btn="确认"
+  cancel-btn="取消"
+  bind:confirm="confirmAddTempStall"
+  bind:cancel="closeTempStallDialog"
+>
+  <view class="dialog-content" slot="content">
+    <view class="temp-stall-form">
+      <!-- 采价点名称 - 必填 -->
+      <t-input 
+        label="采价点名称" 
+        placeholder="请输入采价点名称" 
+        value="{{tempStallForm.stallName}}"
+        bind:change="onTempStallNameChange"
+        required
+      />
+      
+      <!-- 采价类型 - 必选 -->
+      <t-cell 
+        title="采价类型" 
+        note="{{tempStallForm.stallTypeName || '请选择采价类型'}}" 
+        arrow 
+        hover 
+        bind:click="selectStallType"
+        required
+      />
+      
+      <!-- 品种大类 - 多选 -->
+      <t-cell 
+        title="品种大类" 
+        note="{{tempStallForm.varietyNames || '请选择品种大类'}}" 
+        arrow 
+        hover 
+        bind:click="selectVarieties"
+      />
+      
+      <!-- 行政区划 - 必填单选 -->
+      <t-cell 
+        title="行政区划" 
+        note="{{tempStallForm.areaName || '请选择行政区划'}}" 
+        arrow 
+        hover 
+        bind:click="selectArea"
+        required
+      />
+      
+      <!-- 详细地址 - 必填 -->
+      <t-input 
+        label="详细地址" 
+        placeholder="请输入详细地址" 
+        value="{{tempStallForm.stallAddress}}"
+        bind:change="onTempStallAddressChange"
+        type="textarea"
+        required
+      />
+      
+      <!-- 联系人 - 非必填 -->
+      <t-input 
+        label="联系人" 
+        placeholder="请输入联系人" 
+        value="{{tempStallForm.linkerName}}"
+        bind:change="onTempStallLinkerChange"
+      />
+      
+      <!-- 联系电话 - 非必填 -->
+      <t-input 
+        label="联系电话" 
+        placeholder="请输入联系电话" 
+        value="{{tempStallForm.linkerMobile}}"
+        bind:change="onTempStallMobileChange"
+        type="number"
+      />
+    </view>
+  </view>
+</t-dialog>
+
+<!-- 采价类型选择弹窗 -->
+<t-picker
+  visible="{{stallTypePickerVisible}}"
+  value="{{stallTypePickerValue}}"
+  title="选择采价类型"
+  cancelBtn="取消"
+  confirmBtn="确认"
+  usingCustomNavbar
+  bindconfirm="onStallTypePickerConfirm"
+  bindcancel="onStallTypePickerCancel"
+>
+  <t-picker-item options="{{stallTypeOptions}}" />
+</t-picker>
+
+<!-- 品种大类多选弹窗 -->
+<t-popup
+  visible="{{varietySelectVisible}}"
+  using-custom-navbar
+  close-on-overlay-click="{{true}}"
+  bind:visible-change="onVarietySelectVisibleChange"
+  placement="bottom"
+>
+  <view class="variety-select-container" slot="content">
+    <view class="variety-select-title">选择品种大类</view>
+    <scroll-view class="variety-select-scroll" scroll-y="true">
+      <t-checkbox-group value="{{tempStallForm.varietyIds}}" bind:change="onVarietyCheckboxChange">
+        <view class="variety-option" wx:for="{{varietyOptions}}" wx:key="varietyId">
+          <t-checkbox value="{{item.varietyId}}" label="{{item.varietyName}}" />
+        </view>
+      </t-checkbox-group>
+    </scroll-view>
+    <view class="variety-select-operation">
+      <t-button bind:tap="cancelVarietySelect">取消</t-button>
+      <t-button theme="primary" bind:tap="confirmVarietySelect">确认</t-button>
+    </view>
+  </view>
+</t-popup>
+
+<!-- 行政区划选择弹窗 -->
+<t-picker
+  visible="{{areaPickerVisible}}"
+  value="{{areaPickerValue}}"
+  title="选择行政区划"
+  cancelBtn="取消"
+  confirmBtn="确认"
+  usingCustomNavbar
+  bindconfirm="onAreaPickerConfirm"
+  bindcancel="onAreaPickerCancel"
+>
+  <t-picker-item options="{{areaOptions}}" />
+</t-picker>
 <t-toast id="t-toast" />
 <floatingButton
  wx:if="{{!disabled}}"

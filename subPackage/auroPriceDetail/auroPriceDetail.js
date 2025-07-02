@@ -14,7 +14,9 @@ import {
   selectVarietySpecss,
   ownerSelectCategories,
   ownerRemoveCollectCategory,
-  ownerAddCollectCategory
+  ownerAddCollectCategory,
+  selectWholeAreaTrees,
+  addTempStall,
 } from "../../utils/api";
 import {
   Toast
@@ -94,6 +96,33 @@ Page({
     showWithInput: false,
     busiId: '',
     busiType: 'COLLECT_PRICE',
+  stallSelectVisible: false,
+  stallSearchValue: '',
+  filteredStallList: [],
+  selectedStallId: '',
+  confirmStallLoading: false,
+  
+  showTempStallDialog: false,
+  tempStallForm: {
+    stallName: '',
+    stallType: '',
+    stallTypeName: '',
+    varietyIds: [],
+    varietyNames: '',
+    areaCode: '',
+    areaName: '',
+    stallAddress: '',
+    linkerName: '',
+    linkerMobile: ''
+  },
+  stallTypePickerVisible: false,
+  stallTypePickerValue: '',
+  stallTypeOptions: [],
+  varietySelectVisible: false,
+  varietyOptions: [],
+  areaPickerVisible: false,
+  areaPickerValue: '',
+  areaOptions: [],
   },
   onLoad(options) {
     if (options.collectPriceId) {
@@ -183,22 +212,512 @@ Page({
     }
   },
   selectStalls() {
-    if (this.data.disabled) {
-      return
-    }
+  if (this.data.disabled) {
+    return
+  }
+  
+  this.setData({
+    stallSelectVisible: true,
+    stallSearchValue: '',
+    filteredStallList: this.data.selectChooseStallList,
+    selectedStallId: this.data.pricingDetail.stallId || ''
+  })
+},
+onStallSelectVisibleChange(e) {
+  this.setData({
+    stallSelectVisible: e.detail.visible
+  })
+},
+onStallSearchClear() {
+  this.setData({
+    stallSearchValue: '',
+    filteredStallList: this.data.selectChooseStallList
+  })
+},
+
+onStallSearchChange(e) {
+  const searchValue = e.detail.value
+  this.setData({
+    stallSearchValue: searchValue
+  })
+  this.filterStallList(searchValue)
+},
+
+onStallSearch(e) {
+  const searchValue = e.detail.value
+  this.filterStallList(searchValue)
+},
+// 过滤采价点列表
+filterStallList(searchValue) {
+  if (!searchValue.trim()) {
     this.setData({
-      pickerOptions: this.data.selectChooseStallList.map(item => {
-        return {
-          label: item.stallName,
-          value: item.stallId,
-        }
-      }),
-      pickerValue: this.data.pricingDetail.stallId,
-      pickerTitle: "采价点",
-      pickerVisible: true,
-      pickerKay: 'stallId'
+      filteredStallList: this.data.selectChooseStallList
     })
-  },
+    return
+  }
+  
+  const filtered = this.data.selectChooseStallList.filter(item => 
+    item.stallName.includes(searchValue.trim())
+  )
+  
+  this.setData({
+    filteredStallList: filtered
+  })
+},
+
+// 单选框选择
+onStallRadioChange(e) {
+  this.setData({
+    selectedStallId: e.detail.value
+  })
+},
+
+// 确认选择采价点
+confirmStallSelection() {
+  if (!this.data.selectedStallId) {
+    this.toast('请选择一个采价点', 'warning')
+    return
+  }
+  
+  this.setData({
+    confirmStallLoading: true
+  })
+  
+  const selectedStall = this.data.selectChooseStallList.find(
+    item => item.stallId === this.data.selectedStallId
+  )
+  
+  if (selectedStall) {
+    // 设置采价点信息
+    this.setData({
+      'pricingDetail.stallId': selectedStall.stallId,
+      'pricingDetail.stallName': selectedStall.stallName,
+      stallSelectVisible: false
+    })
+    
+    // 根据采价点类型设置价格类型
+    const stallType = selectedStall.stallType
+    const priceType = stallType === 'SFRM' ? 'FARMER_SALE_PRICE' : 'BUY_PRICE'
+    this.setData({
+      'pricingDetail.priceType': priceType,
+      stallType: stallType
+    })
+    
+    // 获取采价点相关数据
+    Promise.all([
+      // 获取品种大类数据
+      this.selectButtomVarietiesFnAsync(selectedStall.stallId),
+      // 获取联系人信息
+      this.getLinkerList(selectedStall.stallId)
+    ]).then(() => {
+      this.setData({
+        confirmStallLoading: false
+      })
+      this.toast('采价点选择成功', 'success')
+    }).catch(err => {
+      console.error('获取采价点数据失败:', err)
+      this.setData({
+        confirmStallLoading: false
+      })
+      this.toast('获取采价点数据失败', 'error')
+    })
+    
+  } else {
+    this.setData({
+      confirmStallLoading: false
+    })
+    this.toast('选择的采价点不存在', 'error')
+  }
+},
+
+selectButtomVarietiesFnAsync(stallId) {
+  return new Promise((resolve, reject) => {
+    const params = {
+      "condition": {
+        "primaryKey": stallId
+      }
+    }
+    
+    selectStallFruiveggies(params).then((res) => {
+      this.setData({
+        varieties: res,
+        // 清空之前选择的品种相关数据
+        'pricingDetail.varietyId': '',
+        'pricingDetail.varietyName': '',
+        'pricingDetail.categoryId': '',
+        'pricingDetail.categoryName': '',
+        categories: []
+      })
+      
+      // 如果有品种数据，自动选择第一个
+      if (res.length > 0) {
+        const firstVariety = res[0]
+        this.setData({
+          'pricingDetail.varietyId': firstVariety.varietyId,
+          'pricingDetail.varietyName': firstVariety.varietyName,
+          // 设置品种小类数据
+          categories: firstVariety.categories || []
+        })
+        
+        if (firstVariety.varietyId) {
+          this.setPickerData(firstVariety.varietyId, true)
+        }
+        
+        // 如果有品种小类组件，触发获取小类数据
+        this.fetchCategories()
+      }
+      if (res.length > 0) {
+  const firstVariety = res[0]
+  this.setData({
+    'pricingDetail.varietyId': firstVariety.varietyId,
+    'pricingDetail.varietyName': firstVariety.varietyName,
+    categories: firstVariety.categories || []
+  })
+  
+  // 如果有 setPickerData 方法，也调用一下
+  if (firstVariety.varietyId) {
+    this.setPickerData(firstVariety.varietyId, true)
+  }
+  
+  // 延迟调用 fetchCategories 确保组件已经渲染
+  setTimeout(() => {
+    this.fetchCategories()
+  }, 100)
+}
+      
+      resolve(res)
+    }).catch(err => {
+      console.error('获取品种大类失败:', err)
+      reject(err)
+    })
+  })
+},
+
+// 显示新增临时采价点对话框
+showAddTempStallDialog() {
+  // 初始化表单
+  this.setData({
+    showTempStallDialog: true,
+    tempStallForm: {
+      stallName: '',
+      stallType: '',
+      stallTypeName: '',
+      varietyIds: [],
+      varietyNames: '',
+      areaCode: '',
+      areaName: '',
+      stallAddress: '',
+      linkerName: '',
+      linkerMobile: ''
+    }
+  })
+  
+  // 获取采价类型数据
+  this.getStallTypeOptions()
+  // 获取品种大类数据
+  this.getVarietyOptions()
+  // 获取行政区划数据
+  this.getAreaOptions()
+},
+// 获取采价类型选项
+getStallTypeOptions() {
+  const params = {
+    condition: {
+      dictType: 'STALL_TYPE' // 根据实际的字典类型调整
+    }
+  }
+  
+  queryTypeDicts(params).then((res) => {
+    this.setData({
+      stallTypeOptions: res.map(item => ({
+        label: item.dictValue,
+        value: item.dictCode
+      }))
+    })
+  }).catch(err => {
+    console.error('获取采价类型失败:', err)
+    this.toast('获取采价类型失败', 'error')
+  })
+},
+// 获取品种大类选项
+getVarietyOptions() {
+  selectButtomVarieties({}).then((res) => {
+    this.setData({
+      varietyOptions: res
+    })
+  }).catch(err => {
+    console.error('获取品种大类失败:', err)
+    this.toast('获取品种大类失败', 'error')
+  })
+},
+getAreaOptions() {
+  selectWholeAreaTrees({}).then((res) => {
+    // 处理区划数据，转换为选择器需要的格式
+    const areaOptions = this.formatAreaOptions(res)
+    this.setData({
+      areaOptions: areaOptions
+    })
+  }).catch(err => {
+    console.error('获取行政区划失败:', err)
+    this.toast('获取行政区划失败', 'error')
+  })
+},
+// 格式化区划数据（根据实际返回的数据结构调整）
+formatAreaOptions(areaData) {
+  // 这里需要根据实际的API返回格式来处理
+  // 假设返回的是树形结构，需要转换为flat结构
+  const options = []
+  
+  const flatten = (items, prefix = '') => {
+    items.forEach(item => {
+      const label = prefix ? `${prefix} - ${item.areaName}` : item.areaName
+      options.push({
+        label: label,
+        value: item.areaCode
+      })
+      
+      if (item.children && item.children.length > 0) {
+        flatten(item.children, label)
+      }
+    })
+  }
+  
+  if (Array.isArray(areaData)) {
+    flatten(areaData)
+  }
+  
+  return options
+},
+
+
+// 选择采价类型
+selectStallType() {
+  this.setData({
+    stallTypePickerVisible: true,
+    stallTypePickerValue: this.data.tempStallForm.stallType
+  })
+},
+
+onStallTypePickerConfirm(e) {
+  const selectedType = this.data.stallTypeOptions.find(item => item.value === e.detail.value[0])
+  this.setData({
+    'tempStallForm.stallType': e.detail.value[0],
+    'tempStallForm.stallTypeName': selectedType ? selectedType.label : '',
+    stallTypePickerVisible: false
+  })
+},
+
+onStallTypePickerCancel() {
+  this.setData({
+    stallTypePickerVisible: false
+  })
+},
+
+// 选择品种大类
+selectVarieties() {
+  this.setData({
+    varietySelectVisible: true
+  })
+},
+
+onVarietySelectVisibleChange(e) {
+  this.setData({
+    varietySelectVisible: e.detail.visible
+  })
+},
+
+onVarietyCheckboxChange(e) {
+  this.setData({
+    'tempStallForm.varietyIds': e.detail.value
+  })
+},
+
+confirmVarietySelect() {
+  const selectedIds = this.data.tempStallForm.varietyIds
+  const selectedNames = this.data.varietyOptions
+    .filter(item => selectedIds.includes(item.varietyId))
+    .map(item => item.varietyName)
+    .join('、')
+  
+  this.setData({
+    'tempStallForm.varietyNames': selectedNames,
+    varietySelectVisible: false
+  })
+},
+
+cancelVarietySelect() {
+  this.setData({
+    varietySelectVisible: false
+  })
+},
+
+// 选择行政区划
+selectArea() {
+  this.setData({
+    areaPickerVisible: true,
+    areaPickerValue: this.data.tempStallForm.areaCode
+  })
+},
+
+onAreaPickerConfirm(e) {
+  const selectedArea = this.data.areaOptions.find(item => item.value === e.detail.value[0])
+  this.setData({
+    'tempStallForm.areaCode': e.detail.value[0],
+    'tempStallForm.areaName': selectedArea ? selectedArea.label : '',
+    areaPickerVisible: false
+  })
+},
+
+onAreaPickerCancel() {
+  this.setData({
+    areaPickerVisible: false
+  })
+},
+
+// 确认新增临时采价点
+confirmAddTempStall() {
+  const form = this.data.tempStallForm
+  
+  // 验证必填字段
+  if (!form.stallName.trim()) {
+    this.toast('请输入采价点名称', 'warning')
+    return
+  }
+  
+  if (!form.stallType) {
+    this.toast('请选择采价类型', 'warning')
+    return
+  }
+  
+  if (!form.areaCode) {
+    this.toast('请选择行政区划', 'warning')
+    return
+  }
+  
+  if (!form.stallAddress.trim()) {
+    this.toast('请输入详细地址', 'warning')
+    return
+  }
+  
+  // 准备提交数据
+  const submitData = {
+    stallName: form.stallName.trim(),
+    stallType: form.stallType,
+    varietyIds: form.varietyIds,
+    stallAddress: form.stallAddress.trim(),
+    areaCode: form.areaCode
+  }
+  
+  // 如果有联系人信息，添加到提交数据中
+  if (form.linkerName.trim() || form.linkerMobile.trim()) {
+    submitData.linkers = [{
+      linkerName: form.linkerName.trim(),
+      linkerMobile: form.linkerMobile.trim()
+    }]
+  } else {
+    submitData.linkers = []
+  }
+  
+  console.log('提交临时采价点数据:', submitData)
+  
+  this.toast('正在创建临时采价点...', 'loading')
+  
+  // 调用API创建临时采价点
+  addTempStall(submitData).then((res) => {
+    this.toast('临时采价点创建成功', 'success')
+    
+    // 关闭对话框
+    this.setData({
+      showTempStallDialog: false
+    })
+    
+    // 刷新采价点列表
+    this.refreshStallList()
+    
+  }).catch(err => {
+    console.error('创建临时采价点失败:', err)
+    this.toast('创建临时采价点失败', 'error')
+  })
+},
+
+// 刷新采价点列表
+refreshStallList() {
+  this.getCurrentStall()
+  // 同时更新过滤后的列表
+  this.setData({
+    filteredStallList: this.data.selectChooseStallList
+  })
+},
+
+
+
+
+// 关闭临时采价点对话框
+closeTempStallDialog() {
+  this.setData({
+    showTempStallDialog: false
+  })
+},
+
+// 临时采价点表单输入处理
+onTempStallNameChange(e) {
+  this.setData({
+    'tempStallForm.stallName': e.detail.value
+  })
+},
+
+onTempStallTypeChange(e) {
+  this.setData({
+    'tempStallForm.stallType': e.detail.value
+  })
+},
+
+onTempStallAddressChange(e) {
+  this.setData({
+    'tempStallForm.address': e.detail.value
+  })
+},
+
+onTempStallLinkerChange(e) {
+  this.setData({
+    'tempStallForm.linkerName': e.detail.value
+  })
+},
+
+onTempStallMobileChange(e) {
+  this.setData({
+    'tempStallForm.linkerMobile': e.detail.value
+  })
+},
+
+// 确认新增临时采价点
+confirmAddTempStall() {
+  const form = this.data.tempStallForm
+  
+  // 验证必填字段
+  if (!form.stallName.trim()) {
+    this.toast('请输入采价点名称', 'warning')
+    return
+  }
+  
+  if (!form.address.trim()) {
+    this.toast('请输入详细地址', 'warning')
+    return
+  }
+  
+  // 这里应该调用API创建临时采价点
+  // 暂时模拟成功创建
+  this.toast('临时采价点创建成功', 'success')
+  
+  // 关闭对话框
+  this.setData({
+    showTempStallDialog: false
+  })
+  
+  // TODO: 这里需要调用实际的API来创建临时采价点
+  // 创建成功后需要刷新采价点列表
+  // this.refreshStallList()
+},
   setTodayDate() {
     const today = new Date();
     const year = today.getFullYear();

@@ -18,7 +18,7 @@ switch (envVersion) {
     // env.baseURL = "https://www.zhixunchelian.com/price_backend/weixin";
     // env.baseURL = "https:///uat.zhixunchelian.com/price_backend/weixin";
     // env.baseURL = "http://192.168.8.174:8098/price_backend/weixin";
-    env.baseURL = "http://192.168.8.109:8098/price_backend/weixin";
+    env.baseURL = "http://192.168.8.52:8098/price_backend/weixin";
     // env.ImageUrl = 'https://webxtx-test-sz.oss-cn-shenzhen.aliyuncs.com/price_saas/'
     env.ImageUrl = 'https://webxtx-prd.oss-cn-shenzhen.aliyuncs.com/price_saas/'
     break;
