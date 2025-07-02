@@ -454,9 +454,5 @@ export const getOrderRecordorecord = (data) => instance.post('/orecord/getOrderR
  * @returns Promise
  */
 export const saveFruitMarket = (data) => instance.post('/market/saveFruitMarket', data)
-
-// 获取行政区划数据
 export const selectAreaTreeByParentCode = (data) => instance.post('/area/selectAreaTreeByParentCode', data)
-
-// 新增临时采价点接口
 export const saveTempCollectStall = (data) => instance.post('/stall/saveTempCollectStall', data)

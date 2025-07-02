@@ -290,15 +290,6 @@ page {
   --td-button-primary-outline-color: #1989FA !important;
 }
 
-
-
-
-
-
-
-
-
-/* 新增临时采价点对话框样式 */
 .dialog-content {
   padding: 20rpx 0;
   max-height: 70vh;
@@ -306,7 +297,6 @@ page {
 }
 
 
-/* 加载状态样式 */
 .variety-loading,
 .picker-loading {
   display: flex;
@@ -316,7 +306,6 @@ page {
   color: #999;
 }
 
-/* 选择器通用样式 */
 .t-picker__content {
   --td-picker-bg-color: #fff;
 }
@@ -325,7 +314,6 @@ page {
   background: #fff;
 }
 
-/* 表单项样式优化 */
 .temp-stall-form .t-input {
   margin-bottom: 20rpx;
 }
@@ -339,16 +327,12 @@ page {
   border-bottom: none;
 }
 
-
-
-/* 响应式设计 */
 @media (max-height: 600px) {
   .dialog-content {
     max-height: 60vh;
   }
 }
 
-/* 防止内容溢出 */
 .temp-stall-form {
   -webkit-overflow-scrolling: touch;
 }
@@ -380,7 +364,6 @@ page {
   width: 100%;
 }
 
-/* 加载状态 */
 .variety-loading {
   display: flex;
   justify-content: center;
@@ -396,7 +379,6 @@ page {
   font-size: 28rpx;
 }
 
-/* 三级联动区域选择器样式 */
 .area-picker-loading {
   display: flex;
   justify-content: center;
@@ -406,7 +388,6 @@ page {
   background: #fff;
 }
 
-/* t-picker 组件样式覆盖 */
 .t-picker__content {
   background: #fff;
   --td-picker-bg-color: #fff;
@@ -438,8 +419,6 @@ page {
   font-weight: bold;
 }
 
-
-/* 新增临时采价点表单样式 */
 .dialog-content {
   padding: 20rpx 0;
   max-height: 70vh;
@@ -467,8 +446,6 @@ page {
   border-bottom: none;
 }
 
-
-/* 选择器加载状态 */
 .picker-loading {
   display: flex;
   justify-content: center;
@@ -478,7 +455,6 @@ page {
   background: #fff;
 }
 
-/* t-dialog 全局样式覆盖 */
 .t-dialog__body {
   padding: 0 !important;
 }
@@ -497,7 +473,6 @@ page {
   --td-dialog-cancel-color: #666;
 }
 
-/* 确保 checkbox 样式正确 */
 .variety-checkbox .t-checkbox {
   --td-checkbox-icon-checked-color: #1989FA !important;
   --td-checkbox-label-color: #333 !important;
@@ -508,7 +483,6 @@ page {
   line-height: 1.5;
 }
 
-/* 滚动条样式优化 */
 .variety-dialog-scroll::-webkit-scrollbar {
   width: 6rpx;
 }
@@ -523,15 +497,12 @@ page {
   border-radius: 3rpx;
 }
 
-
-/* 修复可能的布局问题 */
 .t-popup__content {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* 主题色统一 */
 :root {
   --primary-color: #1989FA;
   --text-color: #333;
@@ -543,7 +514,6 @@ page {
   --bg-color-light: #f5f5f5;
 }
 
-/* 必填项样式 */
 .required-label {
   display: inline-flex;
   align-items: center;
