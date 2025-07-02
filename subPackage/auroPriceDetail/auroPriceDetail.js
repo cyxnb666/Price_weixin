@@ -121,8 +121,19 @@ Page({
   varietySelectVisible: false,
   varietyOptions: [],
   areaPickerVisible: false,
-  areaPickerValue: '',
+  areaPickerValue: [0, 0, 0],
+  provinces: [], // 省份列表
+  cities: [], // 当前省份下的城市列表  
+  counties: [], // 当前城市下的区县列表
+  rawAreaData: [], // 原始的区域树形数据
   areaOptions: [],
+  selectedProvince: null,
+  selectedCity: null, 
+  selectedCounty: null,
+  
+  stallTypeLoading: false,
+  varietyLoading: false,
+  areaLoading: false
   },
   onLoad(options) {
     if (options.collectPriceId) {
@@ -395,7 +406,6 @@ selectButtomVarietiesFnAsync(stallId) {
 
 // 显示新增临时采价点对话框
 showAddTempStallDialog() {
-  // 初始化表单
   this.setData({
     showTempStallDialog: true,
     tempStallForm: {
@@ -409,99 +419,231 @@ showAddTempStallDialog() {
       stallAddress: '',
       linkerName: '',
       linkerMobile: ''
-    }
+    },
+    stallTypeLoading: true,
+    varietyLoading: true,
+    areaLoading: true
   })
-  
-  // 获取采价类型数据
-  this.getStallTypeOptions()
-  // 获取品种大类数据
-  this.getVarietyOptions()
-  // 获取行政区划数据
-  this.getAreaOptions()
+  this.resetAreaPicker()
+  // 并行加载所有必需的数据
+  Promise.all([
+    this.getStallTypeOptions(),
+    this.getVarietyOptions(), 
+    this.getAreaOptions()
+  ]).then(() => {
+    console.log('所有数据加载完成')
+    this.setData({
+      stallTypeLoading: false,
+      varietyLoading: false,
+      areaLoading: false
+    })
+  }).catch(err => {
+    console.error('数据加载失败:', err)
+    this.setData({
+      stallTypeLoading: false,
+      varietyLoading: false,
+      areaLoading: false
+    })
+    this.toast('数据加载失败，请重试', 'error')
+  })
 },
 // 获取采价类型选项
 getStallTypeOptions() {
-  const params = {
-    condition: {
-      dictType: 'STALL_TYPE' // 根据实际的字典类型调整
+  return new Promise((resolve, reject) => {
+    const params = {
+      condition: {
+        dictType: 'STALL_TYPE'
+      }
     }
-  }
-  
-  queryTypeDicts(params).then((res) => {
-    this.setData({
-      stallTypeOptions: res.map(item => ({
-        label: item.dictValue,
-        value: item.dictCode
-      }))
+    
+    queryTypeDicts(params).then((res) => {
+      console.log('采价类型数据:', res)
+      
+      const options = Array.isArray(res) ? res.map(item => ({
+        label: item.dictValue || item.dictName,
+        value: item.dictCode || item.dictKey
+      })) : []
+      
+      this.setData({
+        stallTypeOptions: options
+      })
+      resolve(options)
+    }).catch(err => {
+      console.error('获取采价类型失败:', err)
+      this.toast('获取采价类型失败', 'error')
+      reject(err)
     })
-  }).catch(err => {
-    console.error('获取采价类型失败:', err)
-    this.toast('获取采价类型失败', 'error')
   })
 },
 // 获取品种大类选项
 getVarietyOptions() {
-  selectButtomVarieties({}).then((res) => {
-    this.setData({
-      varietyOptions: res
+  return new Promise((resolve, reject) => {
+    selectButtomVarieties({}).then((res) => {
+      console.log('品种大类数据:', res)
+      const options = Array.isArray(res) ? res.filter(item => 
+        item.varietyId && item.varietyName
+      ) : []
+      
+      this.setData({
+        varietyOptions: options
+      })
+      resolve(options)
+    }).catch(err => {
+      console.error('获取品种大类失败:', err)
+      this.toast('获取品种大类失败', 'error')
+      reject(err)
     })
-  }).catch(err => {
-    console.error('获取品种大类失败:', err)
-    this.toast('获取品种大类失败', 'error')
   })
 },
 getAreaOptions() {
-  selectWholeAreaTrees({}).then((res) => {
-    // 处理区划数据，转换为选择器需要的格式
-    const areaOptions = this.formatAreaOptions(res)
-    this.setData({
-      areaOptions: areaOptions
+  return new Promise((resolve, reject) => {
+    selectWholeAreaTrees({}).then((res) => {
+      console.log('原始区域数据:', res)
+      
+      // 保存原始数据
+      this.setData({
+        rawAreaData: res
+      })
+      
+      // 处理区域数据为三级联动格式
+      this.processAreaData(res)
+      resolve(res)
+    }).catch(err => {
+      console.error('获取行政区划失败:', err)
+      this.toast('获取行政区划失败', 'error')
+      reject(err)
     })
-  }).catch(err => {
-    console.error('获取行政区划失败:', err)
-    this.toast('获取行政区划失败', 'error')
   })
+},
+
+// 处理区域数据为三级联动格式
+processAreaData(rawData) {
+  if (!Array.isArray(rawData) || rawData.length === 0) {
+    console.error('区域数据格式错误')
+    return
+  }
+  
+  // 提取省份数据（areaLevel: "1"）
+  const provinces = rawData
+    .filter(item => item.areaLevel === "1")
+    .map(item => ({
+      label: item.areaname,
+      value: item.areacode,
+      children: item.children || []
+    }))
+    .sort((a, b) => a.sort - b.sort)
+  
+  // 初始化城市和区县数据（默认选择第一个省份）
+  let cities = []
+  let counties = []
+  
+  if (provinces.length > 0) {
+    const firstProvince = provinces[0]
+    cities = this.getCitiesByProvince(firstProvince.children)
+    
+    if (cities.length > 0) {
+      counties = this.getCountiesByCity(cities[0].children)
+    }
+  }
+  
+  this.setData({
+    provinces: provinces,
+    cities: cities,
+    counties: counties
+  })
+  
+  console.log('处理后的区域数据:', { provinces, cities, counties })
+},
+
+// 根据省份获取城市列表
+getCitiesByProvince(provinceChildren) {
+  if (!Array.isArray(provinceChildren)) return []
+  
+  return provinceChildren
+    .filter(item => item.areaLevel === "2")
+    .map(item => ({
+      label: item.areaname,
+      value: item.areacode,
+      children: item.children || []
+    }))
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0))
+},
+
+// 根据城市获取区县列表
+getCountiesByCity(cityChildren) {
+  if (!Array.isArray(cityChildren)) return []
+  
+  return cityChildren
+    .filter(item => item.areaLevel === "3")
+    .map(item => ({
+      label: item.areaname,
+      value: item.areacode
+    }))
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0))
 },
 // 格式化区划数据（根据实际返回的数据结构调整）
 formatAreaOptions(areaData) {
-  // 这里需要根据实际的API返回格式来处理
-  // 假设返回的是树形结构，需要转换为flat结构
   const options = []
   
-  const flatten = (items, prefix = '') => {
+  const flatten = (items, level = 0, prefix = '') => {
+    if (!Array.isArray(items)) return
+    
     items.forEach(item => {
-      const label = prefix ? `${prefix} - ${item.areaName}` : item.areaName
+      if (!item.areaCode || !item.areaName) return
+      
+      const label = level === 0 ? item.areaName : `${prefix} - ${item.areaName}`
       options.push({
         label: label,
-        value: item.areaCode
+        value: item.areaCode,
+        level: level
       })
       
       if (item.children && item.children.length > 0) {
-        flatten(item.children, label)
+        flatten(item.children, level + 1, label)
       }
     })
   }
   
   if (Array.isArray(areaData)) {
     flatten(areaData)
+  } else if (areaData && typeof areaData === 'object') {
+    // 如果返回的是对象而不是数组，尝试提取数组
+    const dataArray = areaData.data || areaData.list || areaData.result || []
+    flatten(dataArray)
   }
   
   return options
 },
 
-
 // 选择采价类型
 selectStallType() {
+  // 检查数据是否已加载
+  if (this.data.stallTypeOptions.length === 0) {
+    this.toast('采价类型数据加载中，请稍候', 'loading')
+    // 重新加载数据
+    this.getStallTypeOptions().then(() => {
+      this.setData({
+        stallTypePickerVisible: true,
+        stallTypePickerValue: [this.data.tempStallForm.stallType]
+      })
+    })
+    return
+  }
+  
   this.setData({
     stallTypePickerVisible: true,
-    stallTypePickerValue: this.data.tempStallForm.stallType
+    stallTypePickerValue: [this.data.tempStallForm.stallType]
   })
 },
 
 onStallTypePickerConfirm(e) {
-  const selectedType = this.data.stallTypeOptions.find(item => item.value === e.detail.value[0])
+  console.log('采价类型选择:', e.detail.value)
+  
+  const selectedValue = e.detail.value[0]
+  const selectedType = this.data.stallTypeOptions.find(item => item.value === selectedValue)
+  
   this.setData({
-    'tempStallForm.stallType': e.detail.value[0],
+    'tempStallForm.stallType': selectedValue,
     'tempStallForm.stallTypeName': selectedType ? selectedType.label : '',
     stallTypePickerVisible: false
   })
@@ -515,14 +657,20 @@ onStallTypePickerCancel() {
 
 // 选择品种大类
 selectVarieties() {
+  // 检查数据是否已加载
+  if (this.data.varietyOptions.length === 0) {
+    this.toast('品种数据加载中，请稍候', 'loading')
+    // 重新加载数据
+    this.getVarietyOptions().then(() => {
+      this.setData({
+        varietySelectVisible: true
+      })
+    })
+    return
+  }
+  
   this.setData({
     varietySelectVisible: true
-  })
-},
-
-onVarietySelectVisibleChange(e) {
-  this.setData({
-    varietySelectVisible: e.detail.visible
   })
 },
 
@@ -534,6 +682,12 @@ onVarietyCheckboxChange(e) {
 
 confirmVarietySelect() {
   const selectedIds = this.data.tempStallForm.varietyIds
+  
+  if (!selectedIds || selectedIds.length === 0) {
+    this.toast('请至少选择一个品种大类', 'warning')
+    return
+  }
+  
   const selectedNames = this.data.varietyOptions
     .filter(item => selectedIds.includes(item.varietyId))
     .map(item => item.varietyName)
@@ -543,6 +697,16 @@ confirmVarietySelect() {
     'tempStallForm.varietyNames': selectedNames,
     varietySelectVisible: false
   })
+  
+  console.log('选择的品种大类:', selectedNames)
+},
+
+debugDataStatus() {
+  console.log('当前数据状态:')
+  console.log('stallTypeOptions:', this.data.stallTypeOptions)
+  console.log('varietyOptions:', this.data.varietyOptions) 
+  console.log('areaOptions:', this.data.areaOptions)
+  console.log('tempStallForm:', this.data.tempStallForm)
 },
 
 cancelVarietySelect() {
@@ -553,18 +717,109 @@ cancelVarietySelect() {
 
 // 选择行政区划
 selectArea() {
+  // 检查数据是否已加载
+  if (this.data.provinces.length === 0) {
+    this.toast('区域数据加载中，请稍候', 'loading')
+    this.getAreaOptions().then(() => {
+      this.setData({
+        areaPickerVisible: true
+      })
+    })
+    return
+  }
+  
   this.setData({
-    areaPickerVisible: true,
-    areaPickerValue: this.data.tempStallForm.areaCode
+    areaPickerVisible: true
   })
+},
+onAreaColumnChange(e) {
+  console.log('区域选择器列变化:', e.detail)
+  const { column, index } = e.detail
+  const currentValue = [...this.data.areaPickerValue]
+  
+  if (column === 0) {
+    // 省份改变
+    currentValue[0] = index
+    currentValue[1] = 0 // 重置城市选择
+    currentValue[2] = 0 // 重置区县选择
+    
+    const selectedProvince = this.data.provinces[index]
+    const cities = this.getCitiesByProvince(selectedProvince.children)
+    const counties = cities.length > 0 ? this.getCountiesByCity(cities[0].children) : []
+    
+    this.setData({
+      areaPickerValue: currentValue,
+      cities: cities,
+      counties: counties,
+      selectedProvince: selectedProvince
+    })
+    
+  } else if (column === 1) {
+    // 城市改变
+    currentValue[1] = index
+    currentValue[2] = 0 // 重置区县选择
+    
+    const selectedCity = this.data.cities[index]
+    const counties = this.getCountiesByCity(selectedCity.children)
+    
+    this.setData({
+      areaPickerValue: currentValue,
+      counties: counties,
+      selectedCity: selectedCity
+    })
+    
+  } else if (column === 2) {
+    // 区县改变
+    currentValue[2] = index
+    this.setData({
+      areaPickerValue: currentValue,
+      selectedCounty: this.data.counties[index]
+    })
+  }
 },
 
 onAreaPickerConfirm(e) {
-  const selectedArea = this.data.areaOptions.find(item => item.value === e.detail.value[0])
+  console.log('区域选择确认:', e.detail)
+  const { value, label } = e.detail
+  
+  // 确保选择了完整的省市区
+  if (!value[0] && value[0] !== 0) {
+    this.toast('请选择省份', 'warning')
+    return
+  }
+  if (!value[1] && value[1] !== 0) {
+    this.toast('请选择城市', 'warning')
+    return
+  }
+  if (!value[2] && value[2] !== 0) {
+    this.toast('请选择区县', 'warning')
+    return
+  }
+  
+  const selectedProvince = this.data.provinces[value[0]]
+  const selectedCity = this.data.cities[value[1]]
+  const selectedCounty = this.data.counties[value[2]]
+  
+  if (!selectedProvince || !selectedCity || !selectedCounty) {
+    this.toast('选择的区域无效，请重新选择', 'warning')
+    return
+  }
+  
+  // 拼接完整的区域名称
+  const fullAreaName = `${selectedProvince.label}-${selectedCity.label}-${selectedCounty.label}`
+  
   this.setData({
-    'tempStallForm.areaCode': e.detail.value[0],
-    'tempStallForm.areaName': selectedArea ? selectedArea.label : '',
+    'tempStallForm.areaCode': selectedCounty.value,
+    'tempStallForm.areaName': fullAreaName,
     areaPickerVisible: false
+  })
+  
+  console.log('选择的区域:', {
+    code: selectedCounty.value,
+    name: fullAreaName,
+    province: selectedProvince,
+    city: selectedCity,
+    county: selectedCounty
   })
 },
 
@@ -572,6 +827,28 @@ onAreaPickerCancel() {
   this.setData({
     areaPickerVisible: false
   })
+},
+
+resetAreaPicker() {
+  this.setData({
+    areaPickerValue: [0, 0, 0],
+    selectedProvince: null,
+    selectedCity: null,
+    selectedCounty: null
+  })
+  
+  // 重新初始化城市和区县数据
+  if (this.data.provinces.length > 0) {
+    const firstProvince = this.data.provinces[0]
+    const cities = this.getCitiesByProvince(firstProvince.children)
+    const counties = cities.length > 0 ? this.getCountiesByCity(cities[0].children) : []
+    
+    this.setData({
+      cities: cities,
+      counties: counties,
+      selectedProvince: firstProvince
+    })
+  }
 },
 
 // 确认新增临时采价点

@@ -290,8 +290,19 @@ page {
   --td-button-primary-outline-color: #1989FA !important;
 }
 
+
+
+
+
+
+
+
+
+/* 新增临时采价点对话框样式 */
 .dialog-content {
   padding: 20rpx 0;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 /* 品种选择弹窗样式 */
@@ -300,6 +311,7 @@ page {
   height: 80vh;
   display: flex;
   flex-direction: column;
+  background: #fff;
 }
 
 .variety-select-title {
@@ -307,11 +319,14 @@ page {
   font-size: 32rpx;
   font-weight: bold;
   margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1px solid #eee;
 }
 
 .variety-select-scroll {
   flex: 1;
   max-height: 60vh;
+  overflow-y: auto;
 }
 
 .variety-option {
@@ -320,10 +335,15 @@ page {
   border-bottom: 1px solid #f0f0f0;
 }
 
+.variety-option:last-child {
+  border-bottom: none;
+}
+
 .variety-select-operation {
   display: flex;
   gap: 20rpx;
   padding: 20rpx 0;
+  border-top: 1px solid #eee;
   --td-button-primary-bg-color: #1989FA !important;
   --td-button-primary-border-color: #1989FA !important;
 }
@@ -332,11 +352,337 @@ page {
   flex: 1;
 }
 
-/* 临时采价点表单样式 */
+/* 加载状态样式 */
+.variety-loading,
+.picker-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx 0;
+  color: #999;
+}
+
+/* 选择器通用样式 */
+.t-picker__content {
+  --td-picker-bg-color: #fff;
+}
+
+.t-popup__content {
+  background: #fff;
+}
+
+/* 表单项样式优化 */
+.temp-stall-form .t-input {
+  margin-bottom: 20rpx;
+}
+
+.temp-stall-form .t-cell {
+  margin-bottom: 20rpx;
+  border-bottom: 1px solid #eee;
+}
+
+.temp-stall-form .t-cell:last-child {
+  border-bottom: none;
+}
+
+/* 必填项标识 */
+.temp-stall-form .t-cell[required]::before,
+.temp-stall-form .t-input[required]::before {
+  content: '*';
+  color: #e34d59;
+  margin-right: 4rpx;
+  font-weight: bold;
+}
+
+/* 数据加载状态指示器 */
+.data-loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 20rpx 40rpx;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  z-index: 1000;
+}
+
+/* 响应式设计 */
+@media (max-height: 600px) {
+  .variety-select-container {
+    height: 90vh;
+  }
+  
+  .dialog-content {
+    max-height: 60vh;
+  }
+}
+
+/* checkbox组件样式覆盖 */
+.variety-select-scroll .t-checkbox {
+  --td-checkbox-icon-checked-color: #1989FA !important;
+}
+
+/* 防止内容溢出 */
+.variety-select-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+.temp-stall-form {
+  -webkit-overflow-scrolling: touch;
+}
+
+.variety-dialog-content {
+  padding: 0;
+  max-height: 60vh;
+  min-height: 40vh;
+}
+
+.variety-dialog-scroll {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 20rpx;
+  -webkit-overflow-scrolling: touch;
+}
+
+.variety-dialog-option {
+  padding: 24rpx 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.variety-dialog-option:last-child {
+  border-bottom: none;
+}
+
+.variety-checkbox {
+  --td-checkbox-icon-checked-color: #1989FA !important;
+  width: 100%;
+}
+
+/* 加载状态 */
+.variety-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80rpx 0;
+  color: #999;
+}
+
+.no-variety-tip {
+  text-align: center;
+  color: #999;
+  padding: 80rpx 0;
+  font-size: 28rpx;
+}
+
+/* 三级联动区域选择器样式 */
+.area-picker-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx 0;
+  color: #999;
+  background: #fff;
+}
+
+/* t-picker 组件样式覆盖 */
+.t-picker__content {
+  background: #fff;
+  --td-picker-bg-color: #fff;
+  --td-picker-title-color: #333;
+}
+
+.t-picker__header {
+  border-bottom: 1px solid #eee;
+  --td-picker-cancel-color: #666;
+  --td-picker-confirm-color: #1989FA;
+}
+
+.t-picker__body {
+  background: #fff;
+}
+
+.t-picker__column {
+  background: #fff;
+}
+
+.t-picker__item {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+.t-picker__item--active {
+  color: #1989FA;
+  font-weight: bold;
+}
+
+/* 修复品种选择弹窗样式 */
+.variety-dialog-content {
+  padding: 0;
+  max-height: 60vh;
+  min-height: 40vh;
+}
+
+.variety-dialog-scroll {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 20rpx;
+  -webkit-overflow-scrolling: touch;
+}
+
+.variety-dialog-option {
+  padding: 24rpx 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.variety-dialog-option:last-child {
+  border-bottom: none;
+}
+
+.variety-checkbox {
+  --td-checkbox-icon-checked-color: #1989FA !important;
+  width: 100%;
+}
+
+.variety-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80rpx 0;
+  color: #999;
+}
+
+.no-variety-tip {
+  text-align: center;
+  color: #999;
+  padding: 80rpx 0;
+  font-size: 28rpx;
+}
+
+/* 新增临时采价点表单样式 */
+.dialog-content {
+  padding: 20rpx 0;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
 .temp-stall-form {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
-  max-height: 60vh;
-  overflow-y: auto;
+}
+
+.temp-stall-form .t-input {
+  margin-bottom: 20rpx;
+}
+
+.temp-stall-form .t-cell {
+  margin-bottom: 20rpx;
+  border-bottom: 1px solid #eee;
+  --td-cell-title-color: #333 !important;
+  --td-cell-note-color: #666 !important;
+}
+
+.temp-stall-form .t-cell:last-child {
+  border-bottom: none;
+}
+
+/* 必填项标识 */
+.temp-stall-form .t-cell[required]::before,
+.temp-stall-form .t-input[required]::before {
+  content: '*';
+  color: #e34d59;
+  margin-right: 4rpx;
+  font-weight: bold;
+}
+
+/* 选择器加载状态 */
+.picker-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx 0;
+  color: #999;
+  background: #fff;
+}
+
+/* t-dialog 全局样式覆盖 */
+.t-dialog__body {
+  padding: 0 !important;
+}
+
+.t-dialog__content {
+  max-height: 70vh;
+  overflow: hidden;
+}
+
+.t-dialog__header {
+  --td-dialog-title-color: #333;
+}
+
+.t-dialog__footer {
+  --td-dialog-confirm-color: #1989FA;
+  --td-dialog-cancel-color: #666;
+}
+
+/* 确保 checkbox 样式正确 */
+.variety-checkbox .t-checkbox {
+  --td-checkbox-icon-checked-color: #1989FA !important;
+  --td-checkbox-label-color: #333 !important;
+}
+
+.variety-checkbox .t-checkbox__label {
+  font-size: 30rpx;
+  line-height: 1.5;
+}
+
+/* 滚动条样式优化 */
+.variety-dialog-scroll::-webkit-scrollbar {
+  width: 6rpx;
+}
+
+.variety-dialog-scroll::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 3rpx;
+}
+
+.variety-dialog-scroll::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+  border-radius: 3rpx;
+}
+
+/* 响应式设计 */
+@media (max-height: 600px) {
+  .variety-dialog-content {
+    max-height: 90vh;
+  }
+  
+  .variety-dialog-scroll {
+    max-height: 40vh;
+  }
+  
+  .dialog-content {
+    max-height: 60vh;
+  }
+}
+
+/* 修复可能的布局问题 */
+.t-popup__content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 主题色统一 */
+:root {
+  --primary-color: #1989FA;
+  --text-color: #333;
+  --text-color-secondary: #666;
+  --text-color-placeholder: #999;
+  --border-color: #eee;
+  --border-color-light: #f0f0f0;
+  --bg-color: #fff;
+  --bg-color-light: #f5f5f5;
 }

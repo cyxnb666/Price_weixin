@@ -387,45 +387,94 @@
   bindconfirm="onStallTypePickerConfirm"
   bindcancel="onStallTypePickerCancel"
 >
-  <t-picker-item options="{{stallTypeOptions}}" />
+  <t-picker-item 
+    options="{{stallTypeOptions}}" 
+    wx:if="{{stallTypeOptions.length > 0}}"
+  />
+  <!-- 如果没有数据显示加载状态 -->
+  <view wx:else class="picker-loading">
+    <t-loading theme="spinner" size="40rpx" text="加载中..." />
+  </view>
 </t-picker>
 
 <!-- 品种大类多选弹窗 -->
-<t-popup
+<t-dialog
   visible="{{varietySelectVisible}}"
-  using-custom-navbar
-  close-on-overlay-click="{{true}}"
-  bind:visible-change="onVarietySelectVisibleChange"
-  placement="bottom"
+  title="选择品种大类"
+  confirm-btn="确认"
+  cancel-btn="取消"
+  bind:confirm="confirmVarietySelect"
+  bind:cancel="cancelVarietySelect"
+  width="90%"
 >
-  <view class="variety-select-container" slot="content">
-    <view class="variety-select-title">选择品种大类</view>
-    <scroll-view class="variety-select-scroll" scroll-y="true">
-      <t-checkbox-group value="{{tempStallForm.varietyIds}}" bind:change="onVarietyCheckboxChange">
-        <view class="variety-option" wx:for="{{varietyOptions}}" wx:key="varietyId">
-          <t-checkbox value="{{item.varietyId}}" label="{{item.varietyName}}" />
+  <view class="variety-dialog-content" slot="content">
+    <!-- 数据加载状态 -->
+    <view wx:if="{{varietyLoading}}" class="variety-loading">
+      <t-loading theme="spinner" size="40rpx" text="加载品种数据中..." />
+    </view>
+    
+    <!-- 品种选择列表 -->
+    <scroll-view 
+      wx:else
+      class="variety-dialog-scroll" 
+      scroll-y="true"
+    >
+      <t-checkbox-group 
+        value="{{tempStallForm.varietyIds}}" 
+        bind:change="onVarietyCheckboxChange"
+        wx:if="{{varietyOptions.length > 0}}"
+      >
+        <view class="variety-dialog-option" wx:for="{{varietyOptions}}" wx:key="varietyId">
+          <t-checkbox 
+            value="{{item.varietyId}}" 
+            label="{{item.varietyName}}" 
+            class="variety-checkbox"
+          />
         </view>
       </t-checkbox-group>
+      
+      <!-- 无数据提示 -->
+      <view wx:else class="no-variety-tip">
+        暂无品种数据
+      </view>
     </scroll-view>
-    <view class="variety-select-operation">
-      <t-button bind:tap="cancelVarietySelect">取消</t-button>
-      <t-button theme="primary" bind:tap="confirmVarietySelect">确认</t-button>
-    </view>
   </view>
-</t-popup>
+</t-dialog>
 
 <!-- 行政区划选择弹窗 -->
 <t-picker
   visible="{{areaPickerVisible}}"
   value="{{areaPickerValue}}"
-  title="选择行政区划"
+  title="选择地区"
   cancelBtn="取消"
   confirmBtn="确认"
   usingCustomNavbar
-  bindconfirm="onAreaPickerConfirm"
+  bindchange="onAreaPickerConfirm"
+  bindpick="onAreaColumnChange"
   bindcancel="onAreaPickerCancel"
 >
-  <t-picker-item options="{{areaOptions}}" />
+  <!-- 省份选择器 -->
+  <t-picker-item 
+    options="{{provinces}}" 
+    wx:if="{{provinces.length > 0}}"
+  />
+  
+  <!-- 城市选择器 -->
+  <t-picker-item 
+    options="{{cities}}" 
+    wx:if="{{cities.length > 0}}"
+  />
+  
+  <!-- 区县选择器 -->
+  <t-picker-item 
+    options="{{counties}}" 
+    wx:if="{{counties.length > 0}}"
+  />
+  
+  <!-- 数据加载状态 -->
+  <view wx:if="{{provinces.length === 0}}" class="area-picker-loading">
+    <t-loading theme="spinner" size="40rpx" text="加载区域数据中..." />
+  </view>
 </t-picker>
 <t-toast id="t-toast" />
 <floatingButton
