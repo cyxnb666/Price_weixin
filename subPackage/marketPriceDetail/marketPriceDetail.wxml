@@ -7,7 +7,7 @@
     <!-- 所属区县 -->
     <t-cell title="所属区县" note="{{areaText }}" arrow hover data-key="areacode" bind:click="selectArea" />
     <!-- 行情价格日期 -->
-    <date-picker title="行情价格日期" wx:if="{{!disabled}}" start="{{today}}" date="{{priceReportDetail.collectDate}}" bind:datechange="onDateChange" />
+    <date-picker title="行情价格日期" wx:if="{{!disabled}}" date="{{priceReportDetail.collectDate}}" bind:datechange="onDateChange" />
     <!-- 品种大类 -->
     <t-cell title="品种大类" note="{{filter.pickerFilter(priceReportDetail.varietyId, 'varietyId', 'varietyName', varieties) || '请选择'}}" arrow hover data-key="priceType" bind:click="tagClick" />
 

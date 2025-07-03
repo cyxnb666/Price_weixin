@@ -9,7 +9,7 @@
     </t-cell>
     <t-cell title="当前位置" description="{{pricingDetail.collectAddress || '点击获取'}}" right-icon="location" hover bind:click="getLocation" />
     <t-cell title="价格类型" note="{{priceTypes[pricingDetail.priceType] || '请选择'}}" arrow hover data-key="priceType" />
-    <date-picker title="价格日期" start="{{today}}" wx:if="{{!disabled}}" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" />
+    <date-picker title="价格日期" wx:if="{{!disabled}}" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" />
     <t-cell title="价格日期" wx:else="{{disabled}}" note="{{pricingDetail.collectDate}}" />
 
     <t-cell title="品种大类">

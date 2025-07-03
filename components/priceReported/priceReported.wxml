@@ -5,7 +5,7 @@ bind:refresh="bindRefresh">
   <view class="pricingDetail-container">
     <t-cell title="采价点" description="{{pricingDetail.stallName}}" />
     <t-cell title="当前位置" description="{{pricingDetail.collectAddress || '点击获取'}}" right-icon="location" hover bind:click="getLocation" />
-    <date-picker title="价格日期" start="{{today}}" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" wx:if="{{ !disabled }}" />
+    <date-picker title="价格日期" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" wx:if="{{ !disabled }}" />
     <t-cell title="价格日期" wx:else="{{disabled}}" note="{{pricingDetail.collectDate}}" />
     <t-cell title="品种大类">
       <view slot="description">

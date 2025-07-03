@@ -15,7 +15,7 @@ loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']
 		 data-key="priceType"
 		 bind:click="selectPriceType"
 		/>
-    <date-picker title="价格日期" start="{{today}}"  wx:if="{{!disabled}}" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" />
+    <date-picker title="价格日期" wx:if="{{!disabled}}" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" />
     <t-cell title="价格日期"  wx:else="{{disabled}}" note="{{pricingDetail.collectDate}}" />
     <t-cell title="品种大类">
       <view slot="description">

@@ -13,7 +13,7 @@ bind:refresh="bindRefresh">
 		 data-key="priceType"
 		 bind:click="selectPriceType"
 		/>
-    <date-picker title="价格日期" start="{{today}}" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" wx:if="{{ !disabled }}" />
+    <date-picker title="价格日期" date="{{pricingDetail.collectDate}}" bind:datechange="onDateChange" wx:if="{{ !disabled }}" />
     <t-cell title="价格日期" wx:else="{{disabled}}" note="{{pricingDetail.collectDate}}" />
     <t-cell title="品种大类">
       <view slot="description">

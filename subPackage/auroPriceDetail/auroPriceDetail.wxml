@@ -27,7 +27,6 @@
 		<date-picker
 		 title="价格日期"
 		 wx:if="{{!disabled}}"
-		 start="{{today}}"
 		 date="{{pricingDetail.collectDate}}"
 		 bind:datechange="onDateChange"
 		/>
