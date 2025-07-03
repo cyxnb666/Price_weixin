@@ -25,8 +25,8 @@
 	 showBulkSection="{{showBulk}}"
 	/>
   <view class="price-section">
-  <t-cell title="小品种" style="    border: 1px solid #eaeaea">
-        <t-input placeholder="请输入小品种" slot='note' align="right" value='{{smallVarieties}}' bindchange="onTextInput" t-class-tips="tips" data-type='smallVarieties' readonly="{{disabled}}"/>
+  <t-cell title="备注" style="    border: 1px solid #eaeaea">
+        <t-input placeholder="请输入备注" slot='note' align="right" value='{{smallVarieties}}' bindchange="onTextInput" t-class-tips="tips" data-type='smallVarieties' readonly="{{disabled}}"/>
       </t-cell>
   <!-- <t-cell title="货品占比" style="    border: 1px solid #eaeaea">
 

@@ -3,8 +3,8 @@
   <!-- 价格输入面板组件 -->
   <price-input-panel diameterData="{{diameterData}}" weightData="{{weightData}}" bulkData="{{bulkData}}" channel="{{channel}}" diameterSpecs="{{specssList.diameterSpecsVos}}" weightSpecs="{{specssList.weightSpecsVos}}" disabled="{{disabled}}" varietyUnit="{{varietyUnit}}" bind:update="handleUpdate" bind:selectItem="handleSelectItem" bind:toast="handleToast" bind:sectionToggle="handleSectionToggle" showDiameterSection="{{showDiameter}}" showWeightSection="{{showWeight}}" showBulkSection="{{showBulk}}" />
   <view class="price-section">
-    <t-cell title="小品种" style="    border: 1px solid #eaeaea">
-      <t-input placeholder="请输入小品种" slot='note' align="right" value='{{smallVarieties}}' bindchange="onTextInput" t-class-tips="tips" data-type='smallVarieties' />
+    <t-cell title="备注" style="    border: 1px solid #eaeaea">
+      <t-input placeholder="请输入备注" slot='note' align="right" value='{{smallVarieties}}' bindchange="onTextInput" t-class-tips="tips" data-type='smallVarieties' />
     </t-cell>
     <!-- <t-cell title="货品占比" style="    border: 1px solid #eaeaea">
 

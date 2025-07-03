@@ -223,6 +223,13 @@ Page({
         getOwnerCollectCategory(params).then((res) => {
             console.log('获取小类采价信息成功:', res);
 
+            // 检查品种小类自身的状态，如果是已完成状态则设置为只读
+            if (res && res.collectStatus && ['4', '5'].includes(res.collectStatus)) {
+                this.setData({
+                    disabled: true
+                });
+            }
+
             if (!res || !res.specss) {
                 console.log('没有找到采价数据或数据为空');
                 wx.hideLoading();
