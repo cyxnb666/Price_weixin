@@ -862,10 +862,11 @@ Page({
 
   // 刷新采价点列表
   refreshStallList() {
-    this.getCurrentStall()
-    // 同时更新过滤后的列表
-    this.setData({
-      filteredStallList: this.data.selectChooseStallList
+    this.getCurrentStall().then(() => {
+      // 在数据更新完成后再更新过滤后的列表
+      this.setData({
+        filteredStallList: this.data.selectChooseStallList
+      })
     })
   },
 
@@ -997,7 +998,7 @@ Page({
     });
   },
   getCurrentStall() {
-    selectChooseStalls().then(res => {
+    return selectChooseStalls().then(res => {
       console.log(res)
       this.setData({
         selectChooseStallList: res
