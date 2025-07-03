@@ -257,8 +257,10 @@ page {
 
 .popup-container-scroll {
   width: 100%;
-  height: calc(100% - 300rpx);
+  height: calc(100vh - 400rpx);
+  max-height: 69vh;
   --td-radio-icon-checked-color: #1989FA !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 .stall-radio-item {
@@ -290,13 +292,6 @@ page {
   --td-button-primary-outline-color: #1989FA !important;
 }
 
-.dialog-content {
-  padding: 20rpx 0;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-
 .variety-loading,
 .picker-loading {
   display: flex;
@@ -312,29 +307,6 @@ page {
 
 .t-popup__content {
   background: #fff;
-}
-
-.temp-stall-form .t-input {
-  margin-bottom: 20rpx;
-}
-
-.temp-stall-form .t-cell {
-  margin-bottom: 20rpx;
-  border-bottom: 1px solid #eee;
-}
-
-.temp-stall-form .t-cell:last-child {
-  border-bottom: none;
-}
-
-@media (max-height: 600px) {
-  .dialog-content {
-    max-height: 60vh;
-  }
-}
-
-.temp-stall-form {
-  -webkit-overflow-scrolling: touch;
 }
 
 .variety-dialog-content {
@@ -419,33 +391,6 @@ page {
   font-weight: bold;
 }
 
-.dialog-content {
-  padding: 20rpx 0;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.temp-stall-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.temp-stall-form .t-input {
-  margin-bottom: 20rpx;
-}
-
-.temp-stall-form .t-cell {
-  margin-bottom: 20rpx;
-  border-bottom: 1px solid #eee;
-  --td-cell-title-color: #333 !important;
-  --td-cell-note-color: #666 !important;
-}
-
-.temp-stall-form .t-cell:last-child {
-  border-bottom: none;
-}
-
 .picker-loading {
   display: flex;
   justify-content: center;
@@ -453,15 +398,6 @@ page {
   padding: 60rpx 0;
   color: #999;
   background: #fff;
-}
-
-.t-dialog__body {
-  padding: 0 !important;
-}
-
-.t-dialog__content {
-  max-height: 70vh;
-  overflow: hidden;
 }
 
 .t-dialog__header {
@@ -529,4 +465,72 @@ page {
   margin-right: 4rpx;
   font-weight: bold;
   font-size: 30rpx;
+}
+
+.dialog-content {
+  padding: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.temp-stall-dialog-scroll {
+  max-height: 65vh;
+  overflow-y: scroll;
+  padding: 24rpx;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.temp-stall-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  min-height: auto;
+}
+
+.temp-stall-form .t-input {
+  margin-bottom: 0;
+  --td-input-bg-color: #fff;
+  --td-input-border-color: #eee;
+}
+
+.temp-stall-form .t-cell {
+  margin-bottom: 0;
+  border-bottom: 1px solid #eee;
+  --td-cell-title-color: #333 !important;
+  --td-cell-note-color: #666 !important;
+  --td-cell-bg-color: #fff;
+}
+
+.temp-stall-form .t-cell:last-child {
+  border-bottom: none;
+}
+
+/* 强制重置t-dialog样式 */
+.t-dialog__body {
+  padding: 0 !important;
+  max-height: 70vh !important;
+  overflow: hidden !important;
+}
+
+.t-dialog__content {
+  max-height: 70vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 滚动条样式 */
+.temp-stall-dialog-scroll::-webkit-scrollbar {
+  width: 8rpx;
+}
+
+.temp-stall-dialog-scroll::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4rpx;
+}
+
+.temp-stall-dialog-scroll::-webkit-scrollbar-track {
+  background-color: #f8f8f8;
+  border-radius: 4rpx;
 }

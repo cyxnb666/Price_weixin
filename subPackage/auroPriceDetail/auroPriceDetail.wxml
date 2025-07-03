@@ -307,88 +307,90 @@
   bind:cancel="closeTempStallDialog"
 >
   <view class="dialog-content" slot="content">
-    <view class="temp-stall-form">
-      <!-- 采价点名称 - 必填 -->
-      <t-input 
-        placeholder="请输入采价点名称" 
-        value="{{tempStallForm.stallName}}"
-        bind:change="onTempStallNameChange"
-      >
-        <view slot="label" class="required-label">
-          <text class="required-star">*</text>
-          采价点名称
-        </view>
-      </t-input>
-      
-      <!-- 采价类型 - 必选 -->
-      <t-cell 
-        note="{{tempStallForm.stallTypeName || '请选择采价类型'}}" 
-        arrow 
-        hover 
-        bind:click="selectStallType"
-      >
-        <view slot="title" class="required-label">
-          <text class="required-star">*</text>
-          采价类型
-        </view>
-      </t-cell>
-      
-      <!-- 品种大类 - 多选 -->
-      <t-cell 
-        note="{{tempStallForm.varietyNames || '请选择品种大类'}}" 
-        arrow 
-        hover 
-        bind:click="selectVarieties"
-      >
-        <view slot="title" class="required-label">
-          <text class="required-star">*</text>
-          品种大类
-        </view>
-      </t-cell>
-      
-      <!-- 行政区划 - 必填单选 -->
-      <t-cell 
-        note="{{tempStallForm.areaName || '请选择行政区划'}}" 
-        arrow 
-        hover 
-        bind:click="selectArea"
-      >
-        <view slot="title" class="required-label">
-          <text class="required-star">*</text>
-          行政区划
-        </view>
-      </t-cell>
-      
-      <!-- 详细地址 - 必填 -->
-      <t-input 
-        placeholder="请输入详细地址" 
-        value="{{tempStallForm.stallAddress}}"
-        bind:change="onTempStallAddressChange"
-        type="textarea"
-      >
-        <view slot="label" class="required-label">
-          <text class="required-star">*</text>
-          详细地址
-        </view>
-      </t-input>
-      
-      <!-- 联系人 - 非必填 -->
-      <t-input 
-        label="联系人" 
-        placeholder="请输入联系人" 
-        value="{{tempStallForm.linkerName}}"
-        bind:change="onTempStallLinkerChange"
-      />
-      
-      <!-- 联系电话 - 非必填 -->
-      <t-input 
-        label="联系电话" 
-        placeholder="请输入联系电话" 
-        value="{{tempStallForm.linkerMobile}}"
-        bind:change="onTempStallMobileChange"
-        type="number"
-      />
-    </view>
+    <scroll-view class="temp-stall-dialog-scroll" scroll-y="true">
+      <view class="temp-stall-form">
+        <!-- 采价点名称 - 必填 -->
+        <t-input 
+          placeholder="请输入采价点名称" 
+          value="{{tempStallForm.stallName}}"
+          bind:change="onTempStallNameChange"
+        >
+          <view slot="label" class="required-label">
+            <text class="required-star">*</text>
+            采价点名称
+          </view>
+        </t-input>
+        
+        <!-- 采价类型 - 必选 -->
+        <t-cell 
+          note="{{tempStallForm.stallTypeName || '请选择采价类型'}}" 
+          arrow 
+          hover 
+          bind:click="selectStallType"
+        >
+          <view slot="title" class="required-label">
+            <text class="required-star">*</text>
+            采价类型
+          </view>
+        </t-cell>
+        
+        <!-- 品种大类 - 多选 -->
+        <t-cell 
+          note="{{tempStallForm.varietyNames || '请选择品种大类'}}" 
+          arrow 
+          hover 
+          bind:click="selectVarieties"
+        >
+          <view slot="title" class="required-label">
+            <text class="required-star">*</text>
+            品种大类
+          </view>
+        </t-cell>
+        
+        <!-- 行政区划 - 必填单选 -->
+        <t-cell 
+          note="{{tempStallForm.areaName || '请选择行政区划'}}" 
+          arrow 
+          hover 
+          bind:click="selectArea"
+        >
+          <view slot="title" class="required-label">
+            <text class="required-star">*</text>
+            行政区划
+          </view>
+        </t-cell>
+        
+        <!-- 详细地址 - 必填 -->
+        <t-input 
+          placeholder="请输入详细地址" 
+          value="{{tempStallForm.stallAddress}}"
+          bind:change="onTempStallAddressChange"
+          type="textarea"
+        >
+          <view slot="label" class="required-label">
+            <text class="required-star">*</text>
+            详细地址
+          </view>
+        </t-input>
+        
+        <!-- 联系人 - 非必填 -->
+        <t-input 
+          label="联系人" 
+          placeholder="请输入联系人" 
+          value="{{tempStallForm.linkerName}}"
+          bind:change="onTempStallLinkerChange"
+        />
+        
+        <!-- 联系电话 - 非必填 -->
+        <t-input 
+          label="联系电话" 
+          placeholder="请输入联系电话" 
+          value="{{tempStallForm.linkerMobile}}"
+          bind:change="onTempStallMobileChange"
+          type="number"
+        />
+      </view>
+    </scroll-view>
   </view>
 </t-dialog>
 

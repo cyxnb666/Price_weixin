@@ -1761,15 +1761,6 @@ Page({
       return
     }
 
-    if (!this.data.pricingDetail.linkerName) {
-      this.toast('请选择联系人', 'warning')
-      return
-    }
-    if (!this.data.pricingDetail.linkerMobile) {
-      this.toast('请选择联系人电话', 'warning')
-      return
-    }
-
     this.setData({
       submitLoading: true,
     })
