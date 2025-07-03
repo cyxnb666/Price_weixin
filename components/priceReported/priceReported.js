@@ -632,7 +632,7 @@ Component({
       const unit = e.currentTarget.dataset.unit
       this.setData({
         showWithInput: true,
-        unitPrice: value,
+        unitPrice: value == 0 ? null : value,
         unit,
         specssIndex: Number(index),
       });

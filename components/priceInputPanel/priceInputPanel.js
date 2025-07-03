@@ -138,7 +138,7 @@ Component({
 
       this.setData({
         showWithInput: true,
-        unitPrice: value,
+        unitPrice: value == 0 ? null : value,
         unit,
         specssIndex: Number(index),
         inputType: type,
