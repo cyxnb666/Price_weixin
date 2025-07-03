@@ -358,8 +358,7 @@ Page({
           this.setData({
             'pricingDetail.varietyId': firstVariety.varietyId,
             'pricingDetail.varietyName': firstVariety.varietyName,
-            // 设置品种小类数据
-            categories: firstVariety.categories || []
+            categories: []
           })
 
           if (firstVariety.varietyId) {
@@ -367,7 +366,7 @@ Page({
           }
 
           // 如果有品种小类组件，触发获取小类数据
-          this.fetchCategories()
+          this.fetchCategories(firstVariety.varietyId)
         }
 
         resolve(res)
