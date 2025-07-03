@@ -26,6 +26,7 @@
 						 data-id="{{item.categoryId}}"
 						 data-name="{{item.categoryName}}"
 						 data-collectcategoryid="{{item.collectCategoryId}}"
+						 data-collectstatus="{{item.collectStatus}}"
 						 bindtap="handleCategoryClick"
 						>
 							{{item.collectStatus === '2' ? '待采价' : (item.collectStatus === '3' ? '暂存' : '已完成')}}
@@ -68,3 +69,4 @@
 				</view>
 			</view>
 		</t-dialog>
+		<t-toast id="t-toast" />
